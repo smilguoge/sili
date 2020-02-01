@@ -23,7 +23,7 @@ export function ShiftsStoreDelete(data) {
         params: data
     })
 }
-// 排班设置查询
+// 班次设置查询
 export function ShiftsSettingGet(data) {
     return request({
         url: '/v1/schedule-set/list',
@@ -31,8 +31,7 @@ export function ShiftsSettingGet(data) {
         params: data
     })
 }
-// 排班设置新建
-
+// 班次设置新建
 export function ShiftsSettingCreate(data) {
     return request({
         url: '/v1/schedule-set/create',
@@ -45,6 +44,22 @@ export function ShiftsSettingSetD(data) {
     return request({
         url: '/v1/schedule-set/batchs-delete',
         method: 'post',
+        data
+    })
+}
+// 排班设置查询
+export function SchedulingSettingGet(data) {
+    return request({
+        url: '/v1/schedule/index',
+        method: 'get',
         params: data
+    })
+}
+// 排班设置确认
+export function SchedulingSettingCreate(data) {
+    return request({
+        data,
+        url: '/v1/schedule/create',
+        method: 'post',
     })
 }

@@ -23,9 +23,8 @@ const Routers = {
       },
       children: [{
         path: 'sales-order',
-        component: () => import('@/view/ManageSales/Order/sales-order'),
         name: 'sales-order',
-
+        component: () => import('@/view/ManageSales/Order/sales-order'),
         meta: {
           title: '销售开单'
         }
@@ -61,14 +60,22 @@ const Routers = {
         meta: {
           title: '退货管理'
         }
+      },
+      {
+        path: 'front-money',
+        name: 'front-money',
+        component: () => import('@/view/ManageSales/Order/FrontMoney/front-money'),
+        meta: {
+          title: '订金管理'
+        }
       }
       ]
     },
     // 【预约评价】
     {
       path: 'AppointmentAppraise',
-      component: () => import('@/view/ManageSales/AppointmentAppraise/'),
       name: 'AppointmentAppraise',
+      component: () => import('@/view/ManageSales/AppointmentAppraise/'),
       redirect: '/ManageSales/AppointmentAppraise/appoint-manage',
       meta: {
         title: '预约评价'
@@ -94,8 +101,8 @@ const Routers = {
     // 【款项交接】
     {
       path: 'MoneyTransfer',
-      component: () => import('@/view/ManageSales/MoneyTransfer/'),
       name: 'MoneyTransfer',
+      component: () => import('@/view/ManageSales/MoneyTransfer/'),
       redirect: '/ManageSales/MoneyTransfer/transfer',
       meta: {
         title: '款项交接'
@@ -103,7 +110,7 @@ const Routers = {
       children: [{
         path: 'transfer',
         name: 'transfer',
-        component: () => import('@/view/ManageSales/MoneyTransfer/index01'),
+        component: () => import('@/view/ManageSales/MoneyTransfer/moneyTable'),
         meta: {
           title: '款项交接'
         }
@@ -121,28 +128,45 @@ const Routers = {
     // 【消费消耗】
     {
       path: 'ConsumptionReport',
-      component: () => import('@/view/ManageSales/ConsumptionReport/'),
       name: 'ConsumptionReport',
+      component: () => import('@/view/ManageSales/ConsumptionReport/'),
       redirect: '/ManageSales/ConsumptionReport/sales-detail',
       meta: {
         title: '消费消耗'
       },
-      children: [{
-        path: 'sales-detail',
-        name: 'sales-detail',
-        component: () => import('@/view/ManageSales/ConsumptionReport/index01'),
-        meta: {
-          title: '销售明细'
+      children: [
+        {
+          path: 'consumption-order',
+          name: 'consumption-order',
+          component: () => import('@/view/ManageSales/ConsumptionReport/consumption-order'),
+          meta: {
+            title: '消耗开单'
+          }
+        },
+        {
+          path: 'consumption-detail',
+          name: 'consumption-detail',
+          component: () => import('@/view/ManageSales/ConsumptionReport/consumption-detail'),
+          meta: {
+            title: '消耗明细'
+          }
+        },
+        {
+          path: 'consumption-order-manage',
+          name: 'consumption-order-manage',
+          component: () => import('@/view/ManageSales/ConsumptionReport/consumption-order-manage'),
+          meta: {
+            title: '消耗暂存单'
+          }
+        },
+        {
+          path: 'sales-project',
+          name: 'sales-project',
+          component: () => import('@/view/ManageSales/ConsumptionReport/index02'),
+          meta: {
+            title: '产品项目销售明细'
+          }
         }
-      },
-      {
-        path: 'sales-project',
-        name: 'sales-project',
-        component: () => import('@/view/ManageSales/ConsumptionReport/index02'),
-        meta: {
-          title: '产品项目销售明细'
-        }
-      }
       ]
     }
 

@@ -1,195 +1,306 @@
 <template>
-  <!--功能测试 删除请告知 徐晓涛 -->
-  <div>
-    <table onselectstart="return false;" class="index-center">
-      <thead class="index-thead">
-        <tr>
-          <th />
-          <th />
-          <th />
-          <th />
-        </tr>
-      </thead>
-      <tbody id="tb" class="tb index-tbody">
-        <tr v-for="item in tableData" :key="item.index">
-          <td @contextmenu.prevent="dataTd()">{{ item.data }}</td>
-          <td @contextmenu.prevent="dataTd()">{{ item.name }}</td>
-          <td @contextmenu.prevent="dataTd()">{{ item.address }}</td>
-          <td @contextmenu.prevent="dataTd()" />
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <el-container class="m-container">
+    <el-header class="m-header">
+      <el-row class="m-row">
+        <div>
+          <el-button
+            type="primary"
+            size="medium"
+            icon="el-icon-plus"
+            @click="openDialog('created')"
+          >新增</el-button>
+          <el-button
+            type="primary"
+            size="medium"
+            icon="el-icon-delete"
+            @click="openDialog('delete')"
+          >删除</el-button>
+        </div>
+        <el-radio-group v-model="listQuery.status" class="m-row-item" @change="changeStatus">
+          <el-radio-button :label="1">正常</el-radio-button>
+          <el-radio-button :label="0">失效</el-radio-button>
+        </el-radio-group>
+      </el-row>
+    </el-header>
+
+    <el-main>
+      <el-table
+        ref="tableList"
+        :data="tableList"
+        highlight-current-row
+        border
+        stripe
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column width="50" type="selection" />
+        <el-table-column align="center" prop="dic_star" label="星级" />
+        <el-table-column align="center" prop="type" label="类型" />
+        <el-table-column align="center" prop="commission_level" label="分佣层级" />
+        <el-table-column align="center" prop="birthday_multiple" label="生日倍数" />
+        <el-table-column min-width="120" align="center" prop="star_multiple" label="星权日倍数" />
+        <el-table-column align="center" prop="integral_fixed" label="固定积分" />
+        <el-table-column align="center" prop="integral_rate" label="积分比例" />
+        <el-table-column min-width="150" align="center" label="活动生效开始时间">
+          <template slot-scope="{row}">{{ row.effective_start_at | formatDate }}</template>
+        </el-table-column>
+        <el-table-column min-width="150" align="center" label="活动生效结束时间">
+          <template slot-scope="{row}">{{ row.effective_end_at | formatDate }}</template>
+        </el-table-column>
+        <el-table-column min-width="120" align="center" prop="staff.name" label="操作人" />
+        <el-table-column min-width="150" align="center" label="操作时间">
+          <template slot-scope="{row}">{{ row.updated_at | formatDate }}</template>
+        </el-table-column>
+        <el-table-column align="center" prop="status" label="状态" />
+        <el-table-column width="120" align="center" label="操作" fixed="right">
+          <template slot-scope="{row}">
+            <el-button
+              type="primary"
+              size="small"
+              :disabled="listQuery.status === 0 ? true : false"
+              @click="openDialog('redact', row.id)"
+            >编辑</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-main>
+
+    <el-footer class="m-footer">
+      <el-pagination
+        :current-page="listQuery.page"
+        :page-sizes="[5,16]"
+        :page-size="listQuery.page_size"
+        :total="total"
+        background
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </el-footer>
+
+    <IntegralDialog
+      v-model="dialogVisible"
+      :dialog-type="dialogType"
+      :dic-customer-star="dicCustomerStar"
+      :integral-type="integralType"
+      :commission-level="commissionLevel"
+      :integral-status="integralStatus"
+      :edit-back="editBack"
+      :row-id="rowId"
+      @on-success="changeStatus($event)"
+      @on-close="dialogClose"
+    />
+  </el-container>
 </template>
+
 <script>
-import $ from 'jquery'
+import IntegralDialog from './integral-set/integralDialog'
+import {
+  getIntegralSet,
+  getIntegralGcreate,
+  getIntegralGupdate,
+  deleteIntegral
+} from '@/api/BaseModule/SalesSet'
+import dateFormat from '@/component/DateFilter/date'
+
 export default {
+  name: 'IntegralSet',
+  components: {
+    IntegralDialog
+  },
+  filters: {
+    // 时间
+    formatDate(time) {
+      const date = new Date(time)
+      return dateFormat.formatDate(date, 'yyyy-MM-dd')
+    }
+  },
   data() {
     return {
-      tableData: [],
-      data_arr: []
+      total: 1,
+      tableList: [],
+      dialogVisible: false,
+      dialogType: '',
+      multipleSelection: [],
+      listQuery: {
+        page: 0,
+        page_size: 5,
+        status: 1
+      },
+      dicCustomerStar: [], // 星级
+      integralType: [], // 类型
+      commissionLevel: [], // 分佣层级
+      integralStatus: [], // 状态
+      editBack: {}, // 编辑回显
+      rowId: '' // 每一行id
     }
   },
-  mounted() {
-    var _vm = this
-    this.tableData = this.olladd()
-    var mouse_begin = { x: 0, y: 0 }
-    var mouse_end = { x: 0, y: 0 }
-    $(function() {
-      init()
-      $('body').mousedown(function() {
-        $('.tb td').removeClass('td_bg') // 点击表格之外的部分，清空所有选中
-      })
-    })
-
-    function init() {
-      mouseDown()
+  watch: {
+    tableList(val) {
+      if (val && val.length > 0) {
+        val.forEach(item => {
+          item.effective_end_at =
+            item.effective_end_at.length <= 10
+              ? item.effective_end_at * 1000
+              : item.effective_end_at
+          item.effective_start_at =
+            item.effective_start_at.length <= 10
+              ? item.effective_start_at * 1000
+              : item.effective_start_at
+          item.updated_at =
+            item.updated_at.length <= 10
+              ? item.updated_at * 1000
+              : item.updated_at
+        })
+      }
     }
-
-    function mouseDown() {
-      $('.tb td').mousedown(function(e) {
-        // console.log("444");
-        if (e.which == 1) {
-          mouseUp()
-          e.stopPropagation() // 阻止继承父元素document的mousedown事件
-          mouse_begin = {
-            x: $(this)
-              .parent()
-              .parent()
-              .find('tr')
-              .index($(this).parent()[0]),
-            y: $(this)
-              .parent()
-              .find('td')
-              .index($(this)[0])
-          }
-          $('.tb td').removeClass('td_bg') // 清空所有选中
-          $(this).addClass('td_bg')
-          const data = $(this)
-          _vm.data_arr = []
-          _vm.data_arr.push(data)
-          mouseMove()
-        } else {
-          return false
-        }
-      })
-    }
-
-    function mouseMove() {
-      $('.tb td').mouseover(function() {
-        $('.tb td').removeClass('td_bg') // 清空所有选中
-        mouse_end = {
-          x: $(this)
-            .parent()
-            .parent()
-            .find('tr')
-            .index($(this).parent()[0]),
-          y: $(this)
-            .parent()
-            .find('td')
-            .index($(this)[0])
-        }
-        var maxX = mouse_begin.x < mouse_end.x ? mouse_end.x : mouse_begin.x
-        var minX = mouse_begin.x < mouse_end.x ? mouse_begin.x : mouse_end.x
-        var maxY = mouse_begin.y < mouse_end.y ? mouse_end.y : mouse_begin.y
-        var minY = mouse_begin.y < mouse_end.y ? mouse_begin.y : mouse_end.y
-        _vm.data_arr = []
-        for (var i = minX; i <= maxX; i++) {
-          for (var j = minY; j <= maxY; j++) {
-            $('.tb tr:eq(' + i + ') td:eq(' + j + ')').addClass('td_bg')
-            const data = $('.tb tr:eq(' + i + ') td:eq(' + j + ')')
-            // console.log(data)
-            _vm.data_arr.push(data)
-            console.log(_vm.data_arr)
-          }
-        }
-        // $(this).addClass('td_bg');
-      })
-    }
-    //  清除已有的样式
-    function mouseUp() {
-      $('body').mouseup(function() {
-        $('.tb td').unbind('mouseover')
-      })
-    }
+  },
+  created() {
+    this.loadSet()
+    this.loadList()
   },
   methods: {
-    dataTd(e) {
-      console.log(e)
-      console.log('444')
+    // 加载配置项
+    loadSet() {
+      getIntegralGcreate().then(res => {
+        console.log(res)
+        this.dicCustomerStar = res.data.dic.dic_customer_star
+        this.integralType = res.data.integralType
+        this.commissionLevel = res.data.commissionLevel
+        this.integralStatus = res.data.integralStatus
+      })
     },
-    olladd() {
-      return [
-        {
-          data: '123',
-          name: '456',
-          address: '789'
-        },
-        {
-          data: '123',
-          nmae: '456',
-          address: '789'
-        },
-        {
-          data: '123',
-          nmae: '456',
-          address: '789'
-        },
-        {},
-        {}
-      ]
+
+    // 初始化
+    loadList() {
+      getIntegralSet(this.listQuery).then(res => {
+        console.log(res)
+        const arr = JSON.parse(JSON.stringify(res))
+        this.total = parseInt(arr.data.count)
+        this.tableList = arr.data.list
+      })
+    },
+
+    // 切换状态
+    changeStatus(val) {
+      this.listQuery.status = val
+      this.loadList()
+    },
+
+    // 编辑回显
+    getGupdate(id) {
+      return new Promise((resolve, reject) => {
+        getIntegralGupdate(id).then(res => {
+          if (res.data.detail) {
+            console.log(res)
+            this.editBack = JSON.parse(JSON.stringify(res.data.detail))
+            this.rowId = id
+            resolve()
+          }
+          this.dialogVisible = true
+          this.dialogType = 'redact'
+        })
+      })
+    },
+
+    // 批量删除
+    deleteBatch() {
+      this.$confirm('此操作将删除选中数据, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          let arr = []
+          if (this.listQuery.status === 1) {
+            const date = new Date()
+            const str = this.multipleSelection.filter(item => item.effective_start_at < date.getTime())
+            if (str.length > 0) {
+              this.$message.warning('只能删除还未到生效日期的数据')
+              return false
+            } else {
+              this.multipleSelection.forEach(item => {
+                if (item.effective_start_at > date.getTime()) {
+                  arr.push(item.id)
+                }
+              })
+            }
+          } else {
+            this.multipleSelection.forEach(item => {
+              arr.push(item.id)
+            })
+          }
+          console.log(arr)
+          deleteIntegral({ id: arr }).then(res => {
+            arr = []
+            this.$message.success('删除成功!')
+            this.changeStatus(this.listQuery.status)
+          })
+        })
+        .catch(() => {})
+    },
+
+    // 弹窗
+    openDialog(type, id) {
+      switch (type) {
+        case 'created':
+          this.dialogVisible = true
+          this.dialogType = 'created'
+          break
+        case 'redact':
+          this.getGupdate(id)
+          break
+        case 'delete':
+          if (this.multipleSelection.length <= 0) {
+            this.$message.warning('请至少选中一条')
+            return false
+          }
+          this.deleteBatch()
+          break
+      }
+    },
+
+    // 弹窗关闭
+    dialogClose() {
+      this.dialogVisible = false
+    },
+
+    // 多选
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+      console.log(val)
+    },
+
+    // 页数
+    handleSizeChange(val) {
+      this.listQuery.page_size = val
+      this.changeStatus(this.listQuery.status)
+    },
+
+    // 当前页
+    handleCurrentChange(val) {
+      this.listQuery.page = val
+      this.changeStatus(this.listQuery.status)
     }
   }
 }
-// table 鼠标连续选中
 </script>
-<style scoped>
-* {
-  moz-user-select: -moz-none;
-  -moz-user-select: none;
-  -o-user-select: none;
-  -khtml-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+
+<style lang="scss" scoped>
+.m-header {
+  padding: 12px 20px 12px;
+  border-bottom: 1px solid #ebeef5;
+
+  .m-row {
+    display: flex;
+    align-items: center;
+
+    .m-row-item {
+      margin-left: 20px;
+    }
+  }
 }
-.tb {
-  cellspacing: 0px;
-  border-spacing: 0px;
-  border: 1px solid #000;
-  /* user-select: auto; */
-}
-.tb td {
-  width: 100px;
-  height: 50px;
-  border: 1px solid #000;
-}
-th {
-  width: 100px;
-  height: 50px;
-  border: 1px solid #ddd;
-  background: #eee;
-}
-.td_bg {
-  background: #ffaa00;
-}
-.index-center {
+.m-footer {
   display: flex;
-}
-.index-thead > tr {
-  display: flex;
-  flex-direction: column;
-}
-.index-tbody {
-  display: flex;
-}
-.index-tbody > tr {
-  display: flex;
-  flex-direction: column;
-}
-</style>
-<style >
-.td_bg {
-  background: #ffaa00 !important;
+  // justify-content: center;
 }
 </style>

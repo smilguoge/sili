@@ -5,6 +5,7 @@
         class="filter-item"
         style="margin-left: 10px"
         type="primary"
+        plain
         icon="el-icon-plus"
         @click="openDialog('createParent') "
       >新建根项</el-button>
@@ -25,7 +26,7 @@
       <el-button
         class="filter-item"
         style="margin-left: 10px"
-        type="primary"
+        type="danger"
         icon="el-icon-delete"
         @click="deleteData"
       >删 除</el-button>
@@ -58,7 +59,7 @@
     </div>
 
     <el-dialog
-      :title="dialogType=='edit'?'修改项目':'新增项目'"
+      :title="dialogType=='edit'?'修改项目类别':'新增项目类别'"
       :visible.sync="dialogVisible"
       :before-close="handleClose"
       width="600px"
@@ -69,13 +70,13 @@
     >
       <el-form ref="changeData" :rules="rules" :model="changeData" label-width="110px">
         <el-col :span="23">
-          <el-form-item label="项目名称" prop="name">
-            <el-input v-model="changeData.name" placeholder="请输入项目名称" />
+          <el-form-item label="类别名称" prop="name">
+            <el-input v-model="changeData.name" placeholder="请输入类别名称" />
           </el-form-item>
         </el-col>
         <el-col :span="23">
-          <el-form-item label="项目描述" prop="describe">
-            <el-input v-model=" changeData.describe" placeholder="请输入项目描述" />
+          <el-form-item label="类别描述" prop="describe">
+            <el-input v-model=" changeData.describe" placeholder="请输入类别描述" />
           </el-form-item>
         </el-col>
       </el-form>
@@ -108,14 +109,7 @@ export default {
         name: [
           {
             required: true,
-            message: '请输入项目名称',
-            trigger: 'blur'
-          }
-        ],
-        describe: [
-          {
-            required: true,
-            message: '请输入项目描述',
+            message: '请输入类别名称',
             trigger: 'blur'
           }
         ]
@@ -160,7 +154,7 @@ export default {
         this.changeData.parent_id = 0
         this.dialogType = 'create'
         this.dialogVisible = true
-        console.log(this.changeData)
+        // console.log(this.changeData)
         return
       }
       if (this.currentRow == null) {
@@ -171,13 +165,13 @@ export default {
         this.changeData.parent_id = Object.assign({}, this.currentRow).id // copy id
         this.dialogType = type
         this.dialogVisible = true
-        console.log(this.changeData)
+        // console.log(this.changeData)
         return
       } else {
         this.changeData = Object.assign({}, this.currentRow) // copy obj
         this.dialogType = type
         this.dialogVisible = true
-        console.log(this.changeData)
+        // console.log(this.changeData)
         return
       }
     },
@@ -206,9 +200,10 @@ export default {
           this.getList()
           this.dialogVisible = false
           this.resetForm('changeData')
+          this.currentRow = null
         })
         .catch(res => {
-          this.$message.warning(res.message)
+          // this.$message.warning(res.message)
           return
         })
     },
@@ -221,9 +216,10 @@ export default {
           this.getList()
           this.dialogVisible = false
           this.resetForm('changeData')
+          this.currentRow = null
         })
         .catch(res => {
-          this.$message.warning(res.message)
+          // this.$message.warning(res.message)
           return
         })
     },
@@ -240,14 +236,15 @@ export default {
         type: 'warning'
       })
         .then(() => {
-          console.log(deleteId)
+          // console.log(deleteId)
           classApi
             .delete({ id: deleteId })
             .then(res => {
               this.getList()
+              this.currentRow = null
             })
             .catch(res => {
-              this.$message.warning(res.message)
+              // this.$message.warning(res.message)
               return
             })
         })

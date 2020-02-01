@@ -141,7 +141,7 @@ export default {
       checkArr.forEach(item => {
         if (type == 'auth') {
           // - 发送选中部门的name id
-          if (item.child.length <= 0) {
+          if (!item.child || !item.child.length) {
             resArr.push(item)
             resArrId.push(item.id)
             // console.log(resArr)
@@ -212,6 +212,7 @@ export default {
       data[index].shop_id = checkArr
       // this.$emit("update:snycVmaddStruc", false);
       this.$emit('update:snycVmaddpost', data)
+      this.$message.success('操作成功！')
       this.AddStore()
     },
     handleClosep(done) {

@@ -10,27 +10,26 @@
         clearable
       />
       <el-select
-        v-model="listQuery.name2"
+        v-model="listQuery.dic_customer_attr"
         class="input-160 filter-item"
         placeholder="请选择顾客属性"
       >
-        <el-option label="嘉宾" value="1" />
-        <el-option label="售前" value="2" />
-        <el-option label="售后" value="3" />
+        <el-option v-for="(item,index) in customerAttList" :key="index" :label="item.label" :value="item.value" />
       </el-select>
       <el-select
-        v-model="listQuery.name3"
+        v-model="listQuery.status"
         class="input-160 filter-item"
         placeholder="请选择订单状态"
       >
-        <el-option label="撤销" value="1" />
-        <el-option label="暂存" value="2" />
+        <el-option label="作废" value="0" />
+        <el-option label="挂单" value="1" />
+        <el-option label="审批中" value="2" />
+        <el-option label="审批完成" value="3" />
       </el-select>
       <el-date-picker
-        v-model="timearr"
-        type="daterange"
+        v-model="dateRange"
+        type="datetimerange"
         class="dateCompontent filter-item"
-        unlink-panels
         range-separator="—"
         start-placeholder="选择统计时间段"
         end-placeholder="选择统计时间段"
@@ -73,86 +72,86 @@
           fixed="left"
           min-width="140px"
         >
-          <template slot-scope="{row}">{{ row.ordernum }}</template>
+          <template slot-scope="{row}">{{ row.order_no }}</template>
         </el-table-column>
         <el-table-column
           label="会员编号"
           align="center"
           min-width="140px"
         >
-          <template slot-scope="{row}">{{ row.mennum }}</template>
+          <template slot-scope="{row}">{{ row.customer_no }}</template>
         </el-table-column>
         <el-table-column
           label="顾客姓名"
           align="center"
           min-width="120px"
         >
-          <template slot-scope="{row}">{{ row.name }}</template>
+          <template slot-scope="{row}">{{ row.customer_name }}</template>
         </el-table-column>
         <el-table-column
           label="磁卡编号"
           align="center"
           min-width="140px"
         >
-          <template slot-scope="{row}">{{ row.shopname }}</template>
+          <template slot-scope="{row}">{{ row.card_id }}</template>
         </el-table-column>
         <el-table-column
           label="顾客属性"
           align="center"
           min-width="140px"
         >
-          <template slot-scope="{row}">{{ row.proname }}</template>
+          <template slot-scope="{row}">{{ row.dic_customer_attr }}</template>
         </el-table-column>
         <el-table-column
           label="手机号码"
           align="center"
           min-width="120px"
         >
-          <template slot-scope="{row}">{{ row.buynum }}</template>
+          <template slot-scope="{row}">{{ row.phone }}</template>
         </el-table-column>
         <el-table-column
           label="订单总额"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.synum }}</template>
+          <template slot-scope="{row}">{{ row.total }}</template>
         </el-table-column>
         <el-table-column
           label="实收业绩"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.dnum }}</template>
+          <template slot-scope="{row}">{{ row.receive }}</template>
         </el-table-column>
         <el-table-column
           label="实付业绩"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.money }}</template>
+          <template slot-scope="{row}">{{ row.pay }}</template>
         </el-table-column>
         <el-table-column
           label="接待美容院"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.quantity }}</template>
+          <template slot-scope="{row}">{{ row.consume_shop_name }}</template>
         </el-table-column>
         <el-table-column
           label="状态"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.state }}</template>
+          <template slot-scope="{row}">{{ row.status }}</template>
         </el-table-column>
         <el-table-column
           label="操作人"
           align="center"
           min-width="120px"
         >
-          <template slot-scope="{row}">{{ row.oname }}</template>
+          <template slot-scope="{row}">{{ row.operator }}</template>
         </el-table-column>
         <el-table-column
           label="操作时间"
           align="center"
           min-width="160px"
         >
-          <template slot-scope="{row}">{{ row.approve_at | parseTime('{y}-{m}-{d} {h}:{i}') }}</template>
+          <template slot-scope="{row}">{{ row.updated_at | parseTime('{y}-{m}-{d} {h}:{i}') }}</template>
         </el-table-column>
         <el-table-column
           label="操作"
@@ -160,11 +159,11 @@
           align="center"
           fixed="right"
         >
-          <template slot-scope="{row}">
+          <template slot-scope="scope">
             <el-button
               size="mini"
               type="danger"
-              @click="revokeSubmit(row.id)"
+              @click="revokeSubmit(scope.row.id*1,scope.$index)"
             >撤销</el-button>
           </template>
         </el-table-column>
@@ -173,7 +172,7 @@
         <el-pagination
           v-show="total>0"
           :current-page="listQuery.page"
-          :page-sizes="[10,20,30]"
+          :page-sizes="[listQuery.page_size,20,30]"
           :page-size="listQuery.page_size"
           :total="total"
           background
@@ -187,110 +186,89 @@
 </template>
 
 <script>
-import { customerTransfer } from '@/api/ManageCustomer/CustomerManage'
-const transferApi = new customerTransfer()
+import { saleDraftIndex, saleDraftCancel } from '@/api/ManageSales/Order'
 
 export default {
   name: 'InlineEditTable',
   data() {
     return {
-      list: null,
-      departTree: [],
-      changeData: {},
-      testList: [
-        {
-          ordernum: 'Test037036',
-          mennum: 'Text001001',
-          name: '张三',
-          shopname: '3374552',
-          proname: '售后',
-          buynum: '100283115',
-          synum: '100',
-          dnum: '90',
-          money: '288.00',
-          quantity: '测试分店',
-          state: '正常',
-          oname: '乐乐',
-          approve_at: 1543211231222
-        }
-      ],
-
-      // total: null,
-      total: 1,
+      list: [],
+      total: 0,
       listQuery: {
         page: 1,
         page_size: 10,
-        name: '',
         customer_no: '',
-        start_at: '',
-        end_at: ''
+        dic_customer_attr: '',
+        status: '',
+        start_ts: '',
+        end_ts: ''
       },
+      dateRange: [], // 检索时间组
+      customerAttList: [],
 
       // 配置参数
       dialogVisible: false,
-      listLoading: false,
-      timearr: [] // 检索时间组
+      listLoading: false
     }
   },
   created() {
-    this.getList(this.listQuery)
+    this.getList()
   },
   methods: {
-    getList(params) {
+    getList() {
       this.listLoading = true
-      setTimeout(() => {
-        this.list = this.testList
+      saleDraftIndex(this.listQuery).then(res => {
+        if (res.data.order_drafts.length) {
+          this.list = res.data.order_drafts
+          this.total = res.data.total_count * 1
+        } else {
+          this.list = []
+          this.total = 0
+          this.$message.warning('没有更多数据')
+        }
         this.listLoading = false
-      }, 1300)
-      // transferApi.index(params).then(res => {
-      //   const items = res.data
-      //   if (items.list.lenght !== 0) {
-      //     this.list = items.list
-      //     this.total = parseInt(items.count)
-      //     this.listLoading = false
-      //   } else {
-      //     this.list = []
-      //     this.$message.warning('没有更多数据')
-      //     this.listLoading = false
-      //   }
-      // })
+
+        this.customerAttList = res.data.dictionary.dic_customer_attr
+      })
     },
 
     submitSearch() {
-      if (this.timearr && this.timearr.length > 0) {
-        this.listQuery.start_at = Math.floor(this.timearr[0] / 1000)
-        this.listQuery.end_at = Math.floor(this.timearr[1] / 1000)
+      if (this.dateRange && this.dateRange.length > 0) {
+        this.listQuery.start_ts = Math.floor(this.dateRange[0] / 1000)
+        this.listQuery.end_ts = Math.floor(this.dateRange[1] / 1000)
       } else {
-        this.listQuery.start_at = ''
-        this.listQuery.end_at = ''
+        this.listQuery.start_ts = ''
+        this.listQuery.end_ts = ''
       }
-      // FIXME: 待删除
-      this.$message.warning('功能尚在开发中')
-      this.getList(this.listQuery)
+      this.getList()
     },
 
-    revokeSubmit(id) {
+    revokeSubmit(id, index) {
       this.$confirm('此操作将驳回这条审批，是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      })
-        .then(() => {
-          // FIXME: 待删除
-          this.$message.warning('功能尚在开发中')
-          console.log('撤销')
+      }).then(() => {
+        saleDraftCancel({ id: id }).then(res => {
+          this.$message({
+            type: 'success',
+            message: '撤销成功'
+          })
+          // this.list.splice(index,1)
+          this.getList()
         })
-        .catch(() => { })
+      }).catch(() => {
+      })
     },
 
     // - 分页
     handleSizeChange(val) {
       this.listQuery.page_size = val
-      this.getList(this.listQuery)
+      this.getList()
     },
     handleCurrentChange(val) {
       this.listQuery.page = val
-      this.getList(this.listQuery)
+      this.getList()
     }
   }
 }

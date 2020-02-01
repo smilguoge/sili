@@ -9,7 +9,7 @@
       <transition name="bounce">
         <div v-if="show" class="manage-left">
           <!-- <structure :snyc-get.sync="getList" /> -->
-          <Structure :structureData="departTree" />
+          <Structure :structure-data="departTree" />
         </div>
       </transition>
       <div class="manahe-button">
@@ -36,12 +36,12 @@
             </el-form-item>
 
             <el-form-item>
-              <el-select v-model="tableData.store" placeholder="请选择门店"></el-select>
+              <el-select v-model="tableData.store" placeholder="请选择门店" />
             </el-form-item>
 
             <el-form-item>
-              <el-button type="primary" @click="openDialog('search')" icon="el-icon-search">查询</el-button>
-              <el-button type="primary" @click="openDialog('export')" icon="el-icon-download">导出</el-button>
+              <el-button type="primary" icon="el-icon-search" @click="openDialog('search')">查询</el-button>
+              <el-button type="primary" icon="el-icon-download" @click="openDialog('export')">导出</el-button>
               <el-button type="primary" @click="openDialog('submit')">考勤确认</el-button>
               <el-button type="primary" @click="openDialog('detail')">考勤修改明细</el-button>
             </el-form-item>
@@ -64,11 +64,11 @@
             @cell-click="cellClick"
             @row-contextmenu="cellRight"
           >
-            <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-            <el-table-column prop="station" label="岗位名称"></el-table-column>
-            <el-table-column prop="amount1" label="上班时间"></el-table-column>
-            <el-table-column :label="date.head" :key="key" v-for="(date, key) in tableHeader">
-              <template scope="{row}">
+            <el-table-column prop="name" label="姓名" width="180" />
+            <el-table-column prop="station" label="岗位名称" />
+            <el-table-column prop="amount1" label="上班时间" />
+            <el-table-column v-for="(date, key) in tableHeader" :key="key" :label="date.head">
+              <template slot-scope="{row}">
                 <span
                   v-if="row.state === 1"
                   style="display:block"
@@ -116,21 +116,21 @@
           width="300px"
           :before-close="beforeClose"
         >
-          <el-form ref="form" v-model="form" :rules="rules">
+          <el-form ref="formInline" :model="formInline" :rules="rules">
             <el-form-item label="修改理由" prop="textarea">
               <el-input
+                v-model="formInline.textarea"
                 type="textarea"
                 placeholder="请输入汉字，字母，数字，符号"
-                v-model="form.textarea"
                 maxlength="200"
                 show-word-limit
-              ></el-input>
+              />
             </el-form-item>
           </el-form>
 
           <span slot="footer">
-            <el-button @click="close('form')">取 消</el-button>
-            <el-button type="primary" @click="affirm('form')">确 定</el-button>
+            <el-button @click="close('formInline')">取 消</el-button>
+            <el-button type="primary" @click="affirm('formInline')">确 定</el-button>
           </span>
         </el-dialog>
 
@@ -141,15 +141,15 @@
 </template>
 
 <script>
-import treeDrawer from "../../ManageCustomer/ManageCustomer/components/treeDrawer";
-import Structure from "@/component/Structure/index";
-import dialogDetail from "./scheduAffirm-detail";
-import { CouponData, vmDelete } from "@/api/BaseModule/SalesSet";
-import { customerTransfer } from "@/api/ManageCustomer/CustomerManage";
-const transferApi = new customerTransfer();
+import treeDrawer from '../../ManageCustomer/ManageCustomer/components/treeDrawer'
+import Structure from '@/component/Structure/index'
+import dialogDetail from './scheduAffirm-detail'
+import { CouponData, vmDelete } from '@/api/BaseModule/SalesSet'
+import { customerTransfer } from '@/api/ManageCustomer/CustomerManage'
+const transferApi = new customerTransfer()
 
 export default {
-  name: "ScheduAffirm",
+  name: 'ScheduAffirm',
   components: {
     treeDrawer,
     Structure,
@@ -163,75 +163,75 @@ export default {
       drawerVisible: false,
       dialogEditVisible: false,
       departTree: [],
-      form: {
-        textarea: ""
+      formInline: {
+        textarea: ''
       },
       tableData: {
-        date: "",
-        store: "",
+        date: '',
+        store: '',
         radio: 1
       },
       tableData1: [
         {
-          station: "服务技师1",
-          name: "张三",
-          amount1: "上午",
+          station: '服务技师1',
+          name: '张三',
+          amount1: '上午',
           amount3: 10,
           state: 1,
           id: 1
         },
         {
-          station: "服务技师1",
-          name: "张三",
-          amount1: "下午",
+          station: '服务技师1',
+          name: '张三',
+          amount1: '下午',
           amount3: 10,
           state: 1,
           id: 1
         },
         {
-          station: "服务技师2",
-          name: "李四",
-          amount1: "上午",
+          station: '服务技师2',
+          name: '李四',
+          amount1: '上午',
           amount3: 12,
           state: 2,
           id: 2
         },
         {
-          station: "服务技师2",
-          name: "李四",
-          amount1: "下午",
+          station: '服务技师2',
+          name: '李四',
+          amount1: '下午',
           amount3: 12,
           state: 2,
           id: 2
         },
         {
-          station: "服务技师3",
-          name: "王五",
-          amount1: "上午",
+          station: '服务技师3',
+          name: '王五',
+          amount1: '上午',
           amount3: 9,
           state: 3,
           id: 3
         },
         {
-          station: "服务技师3",
-          name: "王五",
-          amount1: "下午",
+          station: '服务技师3',
+          name: '王五',
+          amount1: '下午',
           amount3: 9,
           state: 3,
           id: 3
         },
         {
-          station: "服务技师4",
-          name: "赵六",
-          amount1: "上午",
+          station: '服务技师4',
+          name: '赵六',
+          amount1: '上午',
           amount3: 17,
           state: 4,
           id: 4
         },
         {
-          station: "服务技师4",
-          name: "赵六",
-          amount1: "下午",
+          station: '服务技师4',
+          name: '赵六',
+          amount1: '下午',
           amount3: 17,
           state: 4,
           id: 4
@@ -265,59 +265,59 @@ export default {
       weekOption: [
         {
           value: 0,
-          label: "星期日"
+          label: '星期日'
         },
         {
           value: 1,
-          label: "星期一"
+          label: '星期一'
         },
         {
           value: 2,
-          label: "星期二"
+          label: '星期二'
         },
         {
           value: 3,
-          label: "星期三"
+          label: '星期三'
         },
         {
           value: 4,
-          label: "星期四"
+          label: '星期四'
         },
         {
           value: 5,
-          label: "星期五"
+          label: '星期五'
         },
         {
           value: 6,
-          label: "星期六"
+          label: '星期六'
         }
       ],
       tableHeader: [],
       listQuery: {
         page: 1,
         page_size: 10,
-        name: "",
-        customer_no: "",
-        start_at: "",
-        end_at: ""
+        name: '',
+        customer_no: '',
+        start_at: '',
+        end_at: ''
       },
       multipleSelection: [],
       rules: {
         textarea: [{ required: true, message: '请输入修改理由', trigger: 'blur' }]
       },
-      x: "",
-      y: ""
-    };
+      x: '',
+      y: ''
+    }
   },
   created() {
-    this.loadTableHeader();
-    this.getList(this.listQuery);
+    this.loadTableHeader()
+    this.getList(this.listQuery)
   },
   methods: {
     getList(params) {
       transferApi.shopView().then(res => {
-        this.departTree = res.data;
-      });
+        this.departTree = res.data
+      })
     },
 
     // openDrawer(val) {
@@ -327,36 +327,36 @@ export default {
     // 弹窗集中调用
     openDialog(type) {
       switch (type) {
-        case "submit":
-          this.dialogEditVisible = true;
-          break;
-        case "detail":
-          this.dialogVisible = true;
-          break;
+        case 'submit':
+          this.dialogEditVisible = true
+          break
+        case 'detail':
+          this.dialogVisible = true
+          break
         default:
-          break;
+          break
       }
     },
 
     beforeClose() {
-      this.dialogEditVisible = false;
-      this.$refs['form'].resetFields();
+      this.dialogEditVisible = false
+      this.$refs['formInline'].resetFields()
     },
 
-    close(form) {
-      this.dialogEditVisible = false;
-      this.$refs[form].resetFields();
+    close(formName) {
+      this.dialogEditVisible = false
+      this.$refs[formName].resetFields()
     },
 
-    affirm(form) {
-      this.$refs[form].validate(valid => {
+    affirm(formName) {
+      this.$refs[formName].validate(valid => {
         if (valid) {
-          this.dialogEditVisible = false;
-          this.$refs[form].resetFields();
+          this.dialogEditVisible = false
+          this.$refs[formName].resetFields()
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
 
     cellClick(row, column, cell, event) {
@@ -367,9 +367,9 @@ export default {
     },
 
     cellRight(row, column, event) {
-      console.log(row);
-      console.log(column);
-      console.log(event);
+      console.log(row)
+      console.log(column)
+      console.log(event)
     },
 
     //
@@ -385,100 +385,100 @@ export default {
     //
     changeStatus(val) {
       if (val === 0) {
-        return `<i class="icon-gou iconfont" />`;
+        return `<i class="icon-gou iconfont" />`
       } else if (val === 2) {
-        return "迟到";
+        return '迟到'
       }
     },
 
     // 月/周表头数据
     loadTableHeader() {
-      let date = new Date();
-      let year = date.getFullYear();
-      let month = date.getMonth();
-      let day = date.getDate();
-      let dayNum = this.mGetDate();
-      this.tableHeader = [];
+      const date = new Date()
+      const year = date.getFullYear()
+      const month = date.getMonth()
+      const day = date.getDate()
+      const dayNum = this.mGetDate()
+      this.tableHeader = []
 
       if (this.tableData.radio == 1) {
-        let week = this.mGetDates(year, month, day);
+        const week = this.mGetDates(year, month, day)
         week.map(res => {
-          let day1 = new Date(year, month, res);
-          let val1 = day1.getDay();
-          let obj = {};
-          obj.id = res;
-          obj.head = String(res) + this.weekBack(val1);
-          this.tableHeader.push(obj);
-        });
-        console.log(this.tableHeader);
+          const day1 = new Date(year, month, res)
+          const val1 = day1.getDay()
+          const obj = {}
+          obj.id = res
+          obj.head = String(res) + this.weekBack(val1)
+          this.tableHeader.push(obj)
+        })
+        console.log(this.tableHeader)
       } else {
         for (let i = 0; i < dayNum; i++) {
-          let day2 = new Date(year, month, i + 1);
-          let val2 = day2.getDay();
-          let obj = {};
-          obj.id = i + 1;
-          obj.head = String(i + 1) + this.weekBack(val2);
-          this.tableHeader.push(obj);
+          const day2 = new Date(year, month, i + 1)
+          const val2 = day2.getDay()
+          const obj = {}
+          obj.id = i + 1
+          obj.head = String(i + 1) + this.weekBack(val2)
+          this.tableHeader.push(obj)
         }
       }
     },
 
     // 星期回显
     weekBack(val) {
-      let atr = this.weekOption.filter(item => item.value == val);
-      return atr.map(res => res.label).join(",");
+      const atr = this.weekOption.filter(item => item.value == val)
+      return atr.map(res => res.label).join(',')
     },
 
     // JS获取当前周从星期一到星期天的日期
     mGetDates(year, month, day) {
-      var currentDate = new Date(year, month, day);
-      var timesStamp = currentDate.getTime();
-      var currenDay = currentDate.getDay();
-      var dates = [];
+      var currentDate = new Date(year, month, day)
+      var timesStamp = currentDate.getTime()
+      var currenDay = currentDate.getDay()
+      var dates = []
       for (var i = 0; i < 7; i++) {
         // dates.push(new Date(timesStamp + 24 * 60 * 60 * 1000 * (i - (currenDay + 6) % 7)).toLocaleDateString().replace(/\//g, '-'));
         dates.push(
           new Date(
             timesStamp + 24 * 60 * 60 * 1000 * (i - ((currenDay + 6) % 7))
           ).getDate()
-        );
+        )
       }
-      return dates;
+      return dates
     },
 
     // 获取当前月天数
     mGetDate() {
-      var date = new Date();
-      var year = date.getFullYear();
-      var month = date.getMonth() + 1;
-      var days = new Date(year, month, 0);
-      return days.getDate();
+      var date = new Date()
+      var year = date.getFullYear()
+      var month = date.getMonth() + 1
+      var days = new Date(year, month, 0)
+      return days.getDate()
     },
 
     load() {
-      //昨天的时间
-      var day1 = new Date();
-      day1.setTime(day1.getTime() - 24 * 60 * 60 * 1000);
+      // 昨天的时间
+      var day1 = new Date()
+      day1.setTime(day1.getTime() - 24 * 60 * 60 * 1000)
       var s1 =
-        day1.getFullYear() + "-" + (day1.getMonth() + 1) + "-" + day1.getDate();
-      console.log(s1);
-      //今天的时间
-      var day2 = new Date();
-      day2.setTime(day2.getTime());
+        day1.getFullYear() + '-' + (day1.getMonth() + 1) + '-' + day1.getDate()
+      console.log(s1)
+      // 今天的时间
+      var day2 = new Date()
+      day2.setTime(day2.getTime())
       var s2 =
-        day2.getFullYear() + "-" + (day2.getMonth() + 1) + "-" + day2.getDate();
-      console.log(s2);
+        day2.getFullYear() + '-' + (day2.getMonth() + 1) + '-' + day2.getDate()
+      console.log(s2)
     },
 
     // 切换周/月
     handleRadioChange(val) {
-      console.log(val);
-      this.loadTableHeader();
+      console.log(val)
+      this.loadTableHeader()
     },
 
     // 多选
     handleSelectionChange(val) {
-      this.multipleSelection = val;
+      this.multipleSelection = val
     },
 
     // 合并列
@@ -488,12 +488,12 @@ export default {
           return {
             rowspan: 2,
             colspan: 1
-          };
+          }
         } else {
           return {
             rowspan: 0,
             colspan: 0
-          };
+          }
         }
       }
     },
@@ -501,25 +501,25 @@ export default {
     // 日期
     daterangeChange(daterange) {
       if (daterange[0]) {
-        this.tableData.created_at_start = Math.floor(daterange[0] / 1000);
-        this.tableData.created_at_end = Math.floor(daterange[1] / 1000);
+        this.tableData.created_at_start = Math.floor(daterange[0] / 1000)
+        this.tableData.created_at_end = Math.floor(daterange[1] / 1000)
       } else {
-        this.tableData.created_at_start = "";
-        this.tableData.created_at_end = "";
+        this.tableData.created_at_start = ''
+        this.tableData.created_at_end = ''
       }
     },
 
     // - 分页
     handleSizeChange(val) {
-      this.listQuery.page_size = val;
-      this.getList(this.listQuery);
+      this.listQuery.page_size = val
+      this.getList(this.listQuery)
     },
     handleCurrentChange(val) {
-      this.listQuery.page = val;
-      this.getList(this.listQuery);
+      this.listQuery.page = val
+      this.getList(this.listQuery)
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>

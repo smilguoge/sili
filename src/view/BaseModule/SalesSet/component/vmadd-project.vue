@@ -58,35 +58,37 @@
               </template>
             </el-table-column>
             <el-table-column label="使用条件" width="80" align="center">
-              <template slot-scope="scope">
-                <el-switch v-model="scope.row.is_using" active-value="0" inactive-value="1" />
+              <template slot-scope="{row}">
+                <el-switch v-model="row.is_using" active-value="0" inactive-value="1" />
               </template>
             </el-table-column>
             <el-table-column label="方式" width="180">
-              <template slot-scope="scope">
-                <el-radio-group v-model="scope.row.using_type">
-                  <el-radio :label="0">张数</el-radio>
-                  <el-radio :label="1">全额</el-radio>
+              <template slot-scope="{row}">
+                <el-radio-group v-model="row.using_type">
+                  <el-radio :disabled="(row.is_using*1)" :label="0">张数</el-radio>
+                  <el-radio :disabled="(row.is_using*1)" :label="1">全额</el-radio>
                 </el-radio-group>
               </template>
             </el-table-column>
-            <el-table-column label="到达张数/到达金额" width="180">
-              <template slot-scope="scope">
+            <el-table-column label="达到张数/金额" width="180">
+              <template slot-scope="{row}">
                 <el-input
-                  v-model="scope.row.quantity"
+                  v-model="row.quantity"
                   class="edit-input"
+                  :disabled="(row.is_using*1)"
                   size="small"
-                  placeholder="长度5 数字"
+                  placeholder="请输入"
                 />
               </template>
             </el-table-column>
             <el-table-column label="可使用数(张)" width="180">
-              <template slot-scope="scope">
+              <template slot-scope="{row}">
                 <el-input
-                  v-model="scope.row.amount"
+                  v-model="row.amount"
                   class="edit-input"
+                  :disabled="(row.is_using*1)"
                   size="small"
-                  placeholder="长度5 数字"
+                  placeholder="请输入"
                 />
               </template>
             </el-table-column>
@@ -118,6 +120,12 @@ export default {
       default() {
         return []
       }
+    },
+    snycApplyOjectName: {
+      type: String,
+      default() {
+        return ''
+      }
     }
   },
   data() {
@@ -140,7 +148,8 @@ export default {
           amount: '',
           amount: '',
           goods_type: 1,
-          using_type: 0
+          using_type: 0,
+          goods_name: ''
         }
       ],
       clickTimer: null,
@@ -198,7 +207,8 @@ export default {
         amount: '',
         amount: '',
         goods_type: 1,
-        using_type: 0
+        using_type: 0,
+        goods_name: ''
       }
       this.tablestore.unshift(list)
     },
@@ -228,7 +238,7 @@ export default {
     createFilter(queryString) {
       return restaurant => {
         return (
-          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) !== -1
         )
       }
     },
@@ -292,12 +302,17 @@ export default {
       const list = JSON.parse(JSON.stringify(this.tablestore))
       for (i = 0; i < this.tablestore.length; i++) {
         const data = []
+        const data_name = []
         list[i].goods_id.forEach((item, index) => {
           data.push(item.id)
+          data_name.push(item.name)
           return data
         })
         list[i].goods_id = data
+        list[i].goods_name = data_name
       }
+      const list_name = String(list[0].goods_name)
+      this.$emit('update:snycApplyOjectName', list_name)
       this.$emit('update:snycApplyProject', list)
       this.AddStore()
     },

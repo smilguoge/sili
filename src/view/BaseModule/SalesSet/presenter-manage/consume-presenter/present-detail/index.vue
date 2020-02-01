@@ -127,8 +127,8 @@
 
     <div slot="footer" class="dialog-footer">
       <el-col :span="23">
-        <el-button type="primary" @click="submitForm('presentDetailData')">保存</el-button>
         <el-button @click="handleChildrenClose('presentDetailData')">取消</el-button>
+        <el-button type="primary" @click="submitForm('presentDetailData')">保存</el-button>
       </el-col>
       <div style="clear:both" />
     </div>

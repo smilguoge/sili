@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container employee-out">
     <div class="employee-body minw mheigt">
       <div class="left-body">
         <structure
@@ -45,7 +45,7 @@
         </div>
         <!--  -->
         <el-table :data="tableData" border style="width: 100%">
-          <el-table-column prop="date" label="NO." />z
+          <el-table-column prop="date" label="NO." />
           <el-table-column prop="name" label="登录账号" />
           <el-table-column prop="province" label="员工姓名" />
           <el-table-column prop="city" label="职务" />
@@ -64,10 +64,10 @@
           <el-table-column prop="zip" label="离职原因明细" />
           <el-table-column prop="zip" label="经办人" />
           <el-table-column prop="zip" label="经办日期" />
-          <el-table-column label="操作" width="120">
+          <el-table-column label="操作" width="180">
             <template>
-              <el-button type="text" size="small" @click="handelLZQR">离职确认</el-button>
-              <el-button type="text" size="small">撤销</el-button>
+              <el-button type="primary" size="small" @click="handelLZQR">离职确认</el-button>
+              <el-button type="danger" size="small">撤销</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -77,6 +77,7 @@
     </div>
     <!-- 复职操作 -->
     <el-dialog
+    :close-on-click-modal='false'
       v-if="type==1"
       title="复职操作"
       width="380px"
@@ -104,6 +105,7 @@
     </el-dialog>
     <!-- 离职确认 -->
     <el-dialog
+    :close-on-click-modal='false'
       v-else-if="type==2"
       title="离职确认"
       width="380px"
@@ -125,6 +127,7 @@
     </el-dialog>
     <!--离职登记 -->
     <el-dialog
+    :close-on-click-modal='false'
       v-if="type==3"
       title="离职登记"
       width="500px"
@@ -614,7 +617,8 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.app-container {
+// .app-container {
+.employee-out {
   height: 100%;
   box-sizing: border-box;
   .employee-body {

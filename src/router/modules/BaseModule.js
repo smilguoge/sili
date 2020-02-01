@@ -49,7 +49,7 @@ const Routers = {
         meta: {
           title: '产品管理'
         }
-      },
+      }
       // {
       //   path: 'product-price',
       //   name: 'product-price',
@@ -154,6 +154,14 @@ const Routers = {
         }
       },
       {
+        path: 'coupon_water_table',
+        name: 'coupon_water_table',
+        component: () => import('@/view/BaseModule/SalesSet/coupon_water_table'),
+        meta: {
+          title: '券赠送流水表'
+        }
+      },
+      {
         path: 'presenter-manage',
         name: 'presenter-manage',
         component: () => import('@/view/BaseModule/SalesSet/presenter-manage'),
@@ -167,6 +175,22 @@ const Routers = {
         component: () => import('@/view/BaseModule/SalesSet/integral-set'),
         meta: {
           title: '积分设置'
+        }
+      },
+      {
+        path: 'integral-special',
+        name: 'integral-special',
+        component: () => import('@/view/BaseModule/SalesSet/integral-special'),
+        meta: {
+          title: '特殊积分规则'
+        }
+      },
+      {
+        path: 'star-rule',
+        name: 'star-rule',
+        component: () => import('@/view/BaseModule/SalesSet/star-rule'),
+        meta: {
+          title: '星级规则'
         }
       }
       ]
@@ -210,6 +234,14 @@ const Routers = {
         component: () => import('@/view/BaseModule/PermissionSet/index03'),
         meta: {
           title: '审批明细'
+        }
+      },
+      {
+        path: 'todo-list',
+        name: 'todo-list',
+        component: () => import('@/view/BaseModule/PermissionSet/todo-list'),
+        meta: {
+          title: '我的待办'
         }
       }
       ]

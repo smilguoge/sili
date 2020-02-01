@@ -87,14 +87,44 @@ const Api = {
   // 获取宣传员
   get_staff(val) {
     return request({
-      url: '/v1/staff/search',
+      url: '/v1/staff/search?shop_id=0',
       method: 'get',
       params: {
-        val	: val	
+        val: val
       }
     }).then(res => {
       return res.data
     })
   },
+  // 获取积分明细
+  get_integral_subsidiary(params) {
+    return request({
+      url: '/v1/customer-integral/index',
+      method: 'get',
+      params
+    }).then(res => {
+      return res.data
+    })
+  },
+  // 获取账户余额
+  get_account_balance(params) {
+    return request({
+      url: '/v1/customer-balance/index',
+      method: 'get',
+      params
+    }).then(res => {
+      return res.data
+    })
+  },
+  // 获取消费明细
+  get_statement(params) {
+    return request({
+      url: '/v1/customer-consume/index',
+      method: 'get',
+      params
+    }).then(res => {
+      return res.data
+    })
+  }
 }
 export default Api

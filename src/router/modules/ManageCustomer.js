@@ -46,27 +46,27 @@ const Routers = {
         }
       }
       ]
-    },
-    // 新客管理
-    {
-      path: 'NewCustomerManage',
-      component: () => import('@/view/ManageCustomer/NewCustomerManage/'),
-      name: 'NewCustomerManage',
-      redirect: '/ManageCustomer/NewCustomerManage/customer-set',
-      meta: {
-        title: '新客管理'
-      },
-      children: [{
-        path: 'customer-set',
-        name: 'customer-set',
-        component: () => import('@/view/ManageCustomer/NewCustomerManage/index01'),
-        meta: {
-          title: '新客登记'
-        }
-      }
-
-      ]
     }
+    // 新客管理
+    // {
+    //   path: 'NewCustomerManage',
+    //   component: () => import('@/view/ManageCustomer/NewCustomerManage/'),
+    //   name: 'NewCustomerManage',
+    //   redirect: '/ManageCustomer/NewCustomerManage/customer-set',
+    //   meta: {
+    //     title: '新客管理'
+    //   },
+    //   children: [{
+    //     path: 'customer-set',
+    //     name: 'customer-set',
+    //     component: () => import('@/view/ManageCustomer/NewCustomerManage/index01'),
+    //     meta: {
+    //       title: '新客登记'
+    //     }
+    //   }
+
+    //   ]
+    // }
 
   ]
 }

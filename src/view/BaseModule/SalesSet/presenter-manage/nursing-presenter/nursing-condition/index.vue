@@ -26,7 +26,7 @@
         <el-form-item
           label="时间段"
           prop="time"
-          :rules="formInline.period==1?{ required: true, message: '请选择日期', trigger: 'change' }:''"
+          :rules="formInline.period==1?{ required: true, message: '请选择日期', trigger: 'change' }:[]"
         >
           <el-date-picker
             width="300px"
@@ -122,6 +122,7 @@
         <el-col v-if="formInline.is_cardproject == 1"> 
           <el-form-item
             label="关联销售项"
+            prop="SalesTtem"
             :rules="formInline.is_cardproject==1?{required: true, message: '请输入销售项', trigger: 'blur'}:{}"
           >
             <el-input v-model="formInline.SalesTtem" suffix-icon="el-icon-search" placeholder="支持输入名称检索 (开单时候的项目)"></el-input>
@@ -177,8 +178,8 @@
     </el-form>
 
     <span slot="footer" class="dialog-footer">
-      <el-button @click="submitForm('formInline')">保存</el-button>
       <el-button type="primary" @click="handleClose('formInline')">取消</el-button>
+      <el-button @click="submitForm('formInline')">保存</el-button>
     </span>
   </el-dialog>
 </template>
@@ -215,7 +216,7 @@ export default {
     value(val) {
       this.dialogVisible = val;
       if (val) {
-        if (this.echoTableData.sale_start_at) {
+        if (this.dialogType == "edit") {
           console.log(this.echoTableData);
           this.is_cnum = this.echoTableData.is_nursing_count==1?true:false;
           this.is_num = this.echoTableData.is_nursing_num==1?true:false;
@@ -223,18 +224,14 @@ export default {
           this.num_up = this.echoTableData.nursing_num_up==1?true:false;
           this.count_up = this.echoTableData.nursing_count_up==1?true:false;
           this.limitPro = this.echoTableData.is_unlimited==1?true:false;
-          this.formInline = this.echoTableData;
-          this.formInline.time = [];
           this.formInline.period = parseInt(this.echoTableData.period);
-          this.formInline.sale_start_at = this.echoTableData.sale_start_at;
-          this.formInline.sale_end_at = this.echoTableData.sale_end_at;
-          this.formInline.time.push(this.formInline.sale_start_at,this.formInline.sale_end_at);
           this.formInline.continuous = this.echoTableData.continuous==0?"":this.echoTableData.continuous;
           this.formInline.monthly = this.echoTableData.monthly==0?"":this.echoTableData.monthly;
           this.formInline.nursing_frequency = this.echoTableData.nursing_frequency==0?"":this.echoTableData.nursing_frequency;
           this.formInline.nursing_num = this.echoTableData.nursing_num==0?"":this.echoTableData.nursing_num;
           this.formInline.project_id = this.echoTableData.project_id;
           this.formInline.is_cardproject = parseInt(this.echoTableData.is_cardproject);
+          this.SalesTtem = "";
           this.formInline.relate_project_id = this.echoTableData.relate_project_id;
           this.is_check1 = this.echoTableData.is_consume_add==1?true:false;
           this.formInline.consume_add = this.echoTableData.consume_add==0?"":this.echoTableData.consume_add;
@@ -243,6 +240,12 @@ export default {
           this.is_check3 = this.echoTableData.is_consume_continuous==1?true:false;
           this.formInline.consume_continuousday = this.echoTableData.consume_continuousday==0?"":this.echoTableData.consume_continuousday;
           this.formInline.consume_continuous = this.echoTableData.consume_continuous==0?"":this.echoTableData.consume_continuous;
+          this.formInline.time = [];
+          this.formInline.sale_start_at = this.echoTableData.sale_start_at==0?"":this.echoTableData.sale_start_at;
+          this.formInline.sale_end_at = this.echoTableData.sale_end_at==0?"":this.echoTableData.sale_end_at;
+          if (this.formInline.sale_start_at !== "" && this.formInline.sale_end_at !== "") {
+            this.formInline.time.push(this.formInline.sale_start_at,this.formInline.sale_end_at);
+          }
         } else {
           this.nursingName = "";
           this.SalesTtem = "";
@@ -526,21 +529,20 @@ export default {
         if (!this.is_cnum && !this.is_num && !this.is_wea) {
           this.$message.warning("请至少选中一项");
           return false;
-        } else if (this.is_wea) {
+        }
+        if (this.is_wea) {
           if (!this.is_check1 && !this.is_check2 && !this.is_check3) {
             this.$message.warning('请选择护理财耗');
             return false;
-          } else {
-            if (valid) {
-              this.clearFields();
-              this.handleDone(this.dialogType);
-              this.resetForm("formInline");
-            } else {
-              console.log("error submit!!");
-              return false;
-            }
           }
+        }
+        if (valid) {
+          this.clearFields();
+          this.handleDone(this.dialogType);
+          this.resetForm("formInline");
         } else {
+          console.log("error submit!!");
+          return false;
         }
       });
     },
@@ -562,6 +564,20 @@ export default {
         this.is_check1 = false;
         this.is_check2 = false;
         this.is_check3 = false;
+      }
+      if (this.formInline.period === 1) {
+        this.formInline.continuous = "";
+        this.formInline.monthly = "";
+      }
+      if (this.formInline.period === 2) {
+        this.formInline.sale_start_at = "";
+        this.formInline.sale_end_at = "";
+        this.formInline.monthly = "";
+      }
+      if (this.formInline.period === 3) {
+        this.formInline.sale_start_at = "";
+        this.formInline.sale_end_at = "";
+        this.formInline.continuous = "";
       }
     },
 

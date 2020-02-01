@@ -177,7 +177,6 @@ export function getDepartTree() {
 }
 
 // - FIXME: 职务管理
-
 export function getPosition(params) {
   return request({
     url: '/v1/position/index',
@@ -302,3 +301,52 @@ export function deleteWarehouseS(id) {
     method: 'delete'
   })
 }
+
+export function getBankList(params) {
+  return request({
+    url: '/v1/shop-account/index',
+    method: 'get',
+    params
+  })
+}
+
+export function getPosList(params) {
+  return request({
+    url: '/v1/shop-pos/index',
+    method: 'get',
+    params
+  })
+}
+
+export function updateBank(data) {
+  return request({
+    url: '/v1/shop-account/create',
+    method: 'POST',
+    data
+  })
+}
+
+export function updatePos(data) {
+  return request({
+    url: '/v1/shop-pos/create',
+    method: 'POST',
+    data
+  })
+}
+
+export function deletePos(params) {
+  return request({
+    url: '/v1/shop-pos/delete',
+    method: 'delete',
+    params
+  })
+}
+
+export function deleteBank(params) {
+  return request({
+    url: '/v1/shop-account/delete',
+    method: 'delete',
+    params
+  })
+}
+

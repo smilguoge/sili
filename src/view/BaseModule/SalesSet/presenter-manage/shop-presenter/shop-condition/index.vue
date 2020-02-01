@@ -99,7 +99,7 @@
 
           <el-form-item style="margin:0;float:right;">
             <el-button type="primary" size="mini" class="e-pad-top" @click="openDialog('add')">新增</el-button>
-            <el-button type="primary" size="mini" class="e-pad-top" @click="openDialog('del')">删除</el-button>
+            <el-button type="danger" size="mini" class="e-pad-top" @click="openDialog('del')">删除</el-button>
           </el-form-item>
         </div>
 
@@ -135,8 +135,8 @@
     </el-form>
 
     <span slot="footer" class="dialog-footer">
-      <el-button @click="submitForm('formInline')">保存</el-button>
       <el-button type="primary" @click="handleClose('formInline')">取消</el-button>
+      <el-button @click="submitForm('formInline')">保存</el-button>
     </span>
 
     <childrenDialog

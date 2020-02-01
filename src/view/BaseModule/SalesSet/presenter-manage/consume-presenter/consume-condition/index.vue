@@ -138,8 +138,8 @@
     </el-form>
 
     <span slot="footer" class="dialog-footer">
-      <el-button @click="submitForm('formInline')">保存</el-button>
       <el-button type="primary" @click="handleClose('formInline')">取消</el-button>
+      <el-button @click="submitForm('formInline')">保存</el-button>
     </span>
   </el-dialog>
 </template>

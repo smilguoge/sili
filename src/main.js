@@ -20,6 +20,9 @@ import './permission' // permission control
 import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
+// import Print from 'vue-print-nb'
+// Vue.use(Print)
+
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
@@ -41,6 +44,20 @@ Vue.use(Element, {
 Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key])
 })
+
+// 添加全局自定义指令（文件都放在src/directives文件夹下）
+Vue.use((Vue) => {
+  ((requireContext) => {
+    const arr = requireContext.keys().map(requireContext);
+    (arr || []).forEach((directive) => {
+      directive = directive.__esModule && directive.default ? directive.default : directive;
+      Object.keys(directive).forEach((key) => {
+        Vue.directive(key, directive[key]);
+      });
+    });
+  })(require.context('./directives', false, /^\.\/.*\.js$/));
+});
+
 
 Vue.config.productionTip = false
 

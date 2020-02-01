@@ -20,19 +20,21 @@
         @click="openDialog('delete')"
       >删 除</el-button>
     </div>
-    <div class="department-main">
-      <el-tree
-        ref="departmentTree"
-        v-loading="listLoading"
-        class="filter-tree"
-        :data="departmentData"
-        :props="departmentProps"
-        :highlight-current="true"
-        :expand-on-click-node="false"
-        default-expand-all
-        :indent="30"
-        @node-click="department"
-      />
+    <div class="department-main clearfix">
+      <el-scroll class="departTreeScroll">
+        <el-tree
+          ref="departmentTree"
+          v-loading="listLoading"
+          class="filter-tree"
+          :data="departmentData"
+          :props="departmentProps"
+          :highlight-current="true"
+          :expand-on-click-node="false"
+          default-expand-all
+          :indent="30"
+          @node-click="department"
+        />
+      </el-scroll>
     </div>
 
     <el-dialog
@@ -79,7 +81,7 @@
               placeholder="请输入部门负责人"
             >
               <el-option
-                v-for="item in principalList"
+                v-for="item in staffList"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value+''"
@@ -126,23 +128,7 @@ import {
 export default {
   depart_name: 'Department',
   data() {
-    var checkPrincipal = (rule, value, callback) => {
-      const result = this.principalList.filter(v => {
-        return v.value == value
-      })
-      if (!result.length) {
-        callback(new Error('该职员不存在'))
-      }
-      callback()
-    }
-
     return {
-      /**
-       *
-       * FIXME: 判断节点是否展示门店状态（节点为门店显示，节点为区域/部门则不显示）
-       *
-       */
-
       departmentData: [],
 
       changeData: {
@@ -151,8 +137,8 @@ export default {
 
       currentRow: null,
 
-      // - 部门负责人列表
-      principalList: [
+      // - 员工列表
+      staffList: [
         {
           label: '张建军',
           value: 1
@@ -231,14 +217,14 @@ export default {
         depart_admin: [
           {
             required: true,
-            validator: checkPrincipal,
+            message: '请选择部门负责人',
             trigger: 'change'
           }
         ],
         status: [
           {
             required: true,
-            message: '请选择门店状态',
+            message: '请选择部门状态',
             trigger: 'change'
           }
         ],
@@ -332,7 +318,6 @@ export default {
             this.resetForm('changeData')
           })
           .catch(res => {
-            this.$message.warning(res.message)
             return
           })
       } else {
@@ -345,7 +330,6 @@ export default {
             this.resetForm('changeData')
           })
           .catch(res => {
-            this.$message.warning(res.message)
             return
           })
       }
@@ -376,7 +360,6 @@ export default {
           })
         })
         .catch(res => {
-          this.$message.warning(res.message)
           return
         })
     },
@@ -399,7 +382,7 @@ export default {
       getDepart(this.getData)
         .then(res => {
           const items = res.data
-          if (items.length != 0) {
+          if (items.length !== 0) {
             this.departmentData = items
           } else {
             this.departmentData = []
@@ -420,10 +403,15 @@ export default {
 .department-main {
   width: 100%;
   padding: 8px 8px 0;
-  height: calc(100vh - 260px);
+  // height: calc(100vh - 260px);
   flex: 1;
   transition: 0.2s;
   -webkit-transition: 0.2s;
+  padding-bottom: 40px;
+
+  .departTreeScroll {
+    padding-bottom: 20px;
+  }
 
   .filter-tree {
     max-height: calc(100% - 40px);

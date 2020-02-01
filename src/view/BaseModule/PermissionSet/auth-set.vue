@@ -145,7 +145,7 @@
       title="新建权限"
       :visible.sync="dialogVisible"
       :before-close="handleClose"
-      :width="dialogWidth"
+      width="360px"
       :close-on-click-modal="false"
     >
       <el-form
@@ -175,7 +175,7 @@
             <el-input
               v-if="changeData.is_special==1"
               v-model="changeData.name"
-              placeholder="请输入名称"
+              placeholder="请输入权限组名称"
             />
             <!-- 非特殊 -->
             <el-select
@@ -184,7 +184,7 @@
               class="w100"
               filterable
               clearable
-              placeholder="请输入岗位名称"
+              placeholder="请选择岗位名称"
             >
               <el-option
                 v-for="item in optionDepart"
@@ -228,7 +228,7 @@
       title="权限配置"
       :visible.sync="optionDialogVisible"
       :before-close="handleOptionClose"
-      :width="optionDialogWidth"
+      width="1100px"
       :close-on-click-modal="false"
     >
       <el-tabs v-model="activeName">
@@ -353,68 +353,11 @@ export default {
     return {
       tableData: [],
 
-      changeData: { is_special: 0 },
+      changeData: { is_special: 0, status: 1 },
 
       // - 权限配置表
       optionLabel: [],
       optionData: [],
-      optionLabel1: [
-        { name: '功能名称', prop: 'name' },
-        { name: '添加', prop: 'is_add' },
-        { name: '修改', prop: 'is_edit' },
-        { name: '删除', prop: 'is_del' },
-        { name: '审核', prop: 'is_audit' },
-        { name: '打印', prop: 'is_print' },
-        { name: '导入', prop: 'is_import' },
-        { name: '导出', prop: 'is_export' }
-      ],
-      optionData1: [
-        {
-          id: 1,
-          name: '基础模块',
-          child: [
-            {
-              id: 3,
-              name: '设置管理',
-              child: [
-                {
-                  id: 5,
-                  name: '辞典设置',
-                  is_add: 1,
-                  is_edit: 1,
-                  is_del: 1,
-                  is_audit: 1,
-                  is_print: 1,
-                  is_import: 1,
-                  is_export: 1
-                },
-                {
-                  id: 7,
-                  name: '门店设置',
-                  is_add: 1,
-                  is_edit: 1,
-                  is_del: 1,
-                  is_audit: 1,
-                  is_print: 1,
-                  is_import: 1,
-                  is_export: 1
-                },
-                {
-                  id: 8,
-                  name: '公司设置',
-                  is_add: 1,
-                  is_edit: 1,
-                  is_del: 1,
-                  is_audit: 1,
-                  is_print: 1,
-                  is_import: 1,
-                  is_export: 1
-                }
-              ]
-            }
-          ]
-        }
-      ],
 
       departTree: [],
 
@@ -486,8 +429,6 @@ export default {
       memberLoading: false,
       flagTime: 0,
       miniSize: 'mini',
-      dialogWidth: '430px',
-      optionDialogWidth: '1100px',
       formLabelWidth: '90px'
     }
   },
@@ -585,7 +526,7 @@ export default {
     // - 重置表单
     resetForm(formName) {
       this.$refs[formName].resetFields()
-      this.changeData = { is_special: 0 }
+      this.changeData = { is_special: 0, status: 1 }
     },
 
     // - 创建/修改主表数据

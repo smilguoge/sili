@@ -15,7 +15,7 @@
     <el-scrollbar class="scroll-ly" style="height:calc(100% - 70px)">
       <div class="dw-wrap">
         <el-tabs v-model="activeName">
-          <el-tab-pane label="2基础信息" name="dataSet">
+          <el-tab-pane label="基础信息" name="dataSet">
             <el-form
               ref="changeData"
               label-position="right"
@@ -313,7 +313,7 @@ export default {
             trigger: 'blur'
           }
         ],
-
+        
         card_count: [
           // {
           //   required: true,

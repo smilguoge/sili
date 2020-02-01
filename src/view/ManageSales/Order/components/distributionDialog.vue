@@ -35,6 +35,7 @@
           :data="achiData"
           style="width:100%"
           height="260px"
+          @selection-change="handleSelectionChange"
         >
           <el-table-column
             type="selection"
@@ -42,11 +43,11 @@
             align="center"
           />
           <el-table-column
-            label="职务"
+            label="分摊职务"
             align="center"
           >
             <template slot-scope="{row}">
-              <span class="info-color">{{ row.class }}</span>
+              <span class="info-color">{{ row.name }}</span>
             </template>
           </el-table-column>
           <el-table-column
@@ -54,15 +55,23 @@
             align="center"
           >
             <template slot-scope="{row}">
-              <span class="info-color">{{ row.code }}</span>
+              <span class="info-color">{{ row.customer_name }}</span>
             </template>
           </el-table-column>
           <el-table-column
-            label="业绩"
+            label="职务"
             align="center"
           >
             <template slot-scope="{row}">
-              <span class="info-color">{{ row.name }}</span>
+              <span class="info-color">{{ row.position_name }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="分摊业绩"
+            align="center"
+          >
+            <template slot-scope="{row}">
+              <span class="info-color">{{ row.achievement }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -77,7 +86,7 @@
         <el-button @click="handleCancel">取 消</el-button>
         <el-button
           type="primary"
-          @click="handleCancel"
+          @click="handleSubmit"
         >确 定</el-button>
       </el-col>
       <div style="clear:both" />
@@ -101,17 +110,18 @@
         <el-form-item
           label="职务"
         >
-          <el-input
-            v-model="formData.position"
-            placeholder="请输入职务"
-          />
+          <el-select ref="sourceProvdiv" v-model="formData.id" placeholder="请选择职务" @change="selectChanged">
+            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
         <el-form-item
           label="姓名"
         >
-          <el-input
-            v-model="formData.name"
-            placeholder="请输入姓名"
+          <el-autocomplete
+            v-model="formData.customer_name"
+            :fetch-suggestions="querySearchAsync"
+            placeholder="请输入内容"
+            @select="handleSelect"
           />
         </el-form-item>
         <el-form-item
@@ -120,6 +130,7 @@
           <el-input
             v-model="formData.achievement"
             placeholder="请输入业绩"
+            type="number"
           />
         </el-form-item>
       </el-form>
@@ -131,7 +142,7 @@
           <el-button @click="handleChildCancel">取 消</el-button>
           <el-button
             type="primary"
-            @click="handleChildCancel"
+            @click="handleChildSubmit"
           >确 定</el-button>
         </el-col>
         <div style="clear:both" />
@@ -140,6 +151,7 @@
   </el-dialog>
 </template>
 <script>
+import { apiGetSaleGcreate, apiGetStaffSearch } from '@/api/ManageSales/Order.js'
 export default {
   name: '',
   props: {
@@ -153,11 +165,24 @@ export default {
   data() {
     return {
       // -
+      restaurants: [],
+      state: '',
+      timeout: null,
+      options: [],
       achiData: [], // 主弹框
-      formData: {}, // 第二层Dialog
+      formData: {
+        name: '',
+        id: '',
+        customer_id: '',
+        customer_name: '',
+        achievement: '',
+        position_id: '',
+        position_name: ''
+      }, // 第二层Dialog
       achievement: '10000.00', // 有效业绩
       dialogVisible: false,
-      dialogChildVisible: false
+      dialogChildVisible: false,
+      selectIds: []
     }
   },
   watch: {
@@ -169,17 +194,124 @@ export default {
     // -
   },
   methods: {
+    // 从父组件传值
+    init() {
+      // 获取职务
+      apiGetSaleGcreate().then(response => {
+        this.options = response.data.dic_performance
+      })
+      apiGetStaffSearch().then(response => {
+        const items = response.data
+        this.restaurants = items.map(v => {
+          this.$set(v, 'value', v.name)
+          return v
+        })
+      })
+      this.dialogVisible = true
+    },
+    // 表格选中后获取id
+    handleSelectionChange(val) {
+      this.selectIds = val.map(item => {
+        return item.customer_id
+      })
+    },
+    querySearchAsync(queryString, cb) {
+      var restaurants = this.restaurants
+      var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants
+      clearTimeout(this.timeout)
+      this.timeout = setTimeout(() => {
+        cb(results)
+      }, 1000 * Math.random())
+    },
+    createStateFilter(queryString) {
+      return (state) => {
+        return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0)
+      }
+    },
+    // 下拉框事件
+    selectChanged(val) {
+      this.$nextTick(() => {
+        this.formData.name = this.$refs.sourceProvdiv.$data.selectedLabel
+      })
+    },
+    // 选择后获取用户
+    handleSelect(item) {
+      for (let i = 0; i < this.achiData.length; i++) {
+        if (this.achiData[i].customer_id === item.id) {
+          this.formData.customer_name = ''
+          this.formData.customer_id = ''
+          this.$message({
+            message: '该用户已在列表',
+            type: 'warning'
+          })
+          break
+        }
+      }
+      this.formData.customer_id = item.id
+      this.formData.position_id = item.position.id
+      this.formData.position_name = item.position.name
+    },
+    // 信息全部填入完成后提交
+    handleChildSubmit() {
+      if (this.formData.name === '') {
+        this.$message({
+          message: '请选择职务',
+          type: 'warning'
+        })
+        return false
+      }
+      if (this.formData.customer_id === '') {
+        this.$message({
+          message: '请选择用户',
+          type: 'warning'
+        })
+        return false
+      }
+      if (this.formData.achievement === '') {
+        this.$message({
+          message: '请输入分摊金额',
+          type: 'warning'
+        })
+        return false
+      }
+      this.achiData.push(this.formData)
+      this.formData = {
+        name: '',
+        id: '',
+        customer_id: '',
+        customer_name: '',
+        achievement: ''
+      }
+      this.dialogChildVisible = false
+    },
+    // 把信息传到父组件
+    handleSubmit() {
+      this.$emit('setAchievement', this.achiData)
+      this.dialogVisible = false
+    },
     // -
     handleCreate() {
       // -
       this.dialogChildVisible = true
     },
     handleDelete() {
-      // -
+      if (this.selectIds.length === 0) {
+        this.$message({
+          message: '请选择用户',
+          type: 'warning'
+        })
+        return false
+      }
+      for (let i = 0; i < this.selectIds.length; i++) {
+        for (let j = 0; j < this.achiData.length; j++) {
+          if (this.selectIds[i] === this.achiData[j].customer_id) {
+            this.achiData.splice(j, 1)
+          }
+        }
+      }
     },
     handleCancel() {
-      // this.$emit('cancel')
-      this.$parent.distributionVisible = false
+      this.dialogVisible = false
     },
     handleChildCancel() {
       this.dialogChildVisible = false

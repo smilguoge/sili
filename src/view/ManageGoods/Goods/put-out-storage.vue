@@ -1,342 +1,394 @@
 <template>
-  <!-- 出库 -->
   <div class="app-container">
-    <!-- 左侧 -->
-    <div class="left ">
-      <!-- <div style="width:auto"> -->
-      <div class="sub-navbar minw">出库
-        <el-button type="primary">新增</el-button>
-        <el-button type="primary">修改</el-button>
-        <el-button type="primary">删除</el-button>
-      </div>
-      <div>
-        <div class="block minw">
-          <el-form
-            ref="form"
-            :model="form"
-            label-width="80px"
-          >
-
-            <span class="demonstration">日期</span>
-            <el-date-picker
-              v-model="datevalue"
-              type="daterange"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              default-value="2018-10-01"
-            />
-            <el-form-item
-              label="入库类型"
-              label-width="80px"
-            >
-              <el-select
-                v-model="form.categary"
-                placeholder="调拨入库"
-              >
-                <el-option
-                  label="采购入库"
-                  value="1"
-                />
-                <el-option
-                  label="其他入库"
-                  value="2"
-                />
-              </el-select>
-            </el-form-item>
-
-            <el-button
-              type="primary"
-              icon="el-icon-search"
-              @click="_search"
-            >查询</el-button>
-
-            <el-form-item label="">
-              <el-radio-group v-model="form.complete">
-                <el-radio label="未完成" />
-                <el-radio label="已完成" />
-              </el-radio-group>
-            </el-form-item>
-
-          </el-form>
-
-        </div>
-
-      </div>
-
-      <el-table
-        v-loading="listLoading"
-        :data="datalist"
-        element-loading-text="拼命加载中"
-        border
-        fit
-        highlight-current-row
-      >
-        <el-table-column
-          align="center"
-          label="单据号"
-          width="95"
-        >
-          <template slot-scope="scope">
-            {{ scope.$index }}
-          </template>
-        </el-table-column>
-        <el-table-column label="入库门店">
-          <template slot-scope="scope">
-            {{ scope.row.storename }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="对方单位"
-          width="110"
-          align="center"
-        >
-          <template slot-scope="scope">
-            <el-tag>{{ scope.row.unit }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="入库类型"
-          width="115"
-          align="center"
-        >
-          <template slot-scope="scope">
-            {{ scope.row.stoerstyle }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          align="center"
-          label="操作人"
-          width="220"
-        >
-          <template slot-scope="scope">
-            <i class="username" />
-            <span>{{ scope.row.username }}</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-          align="center"
-          label="操作时间"
-          width="220"
-        >
-          <template slot-scope="scope">
-            <i class="el-icon-time" />
-            <span>kk{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-          align="center"
-          label="状态"
-          width="220"
-        >
-          <template slot-scope="scope">
-            <i class="status" />
-            <span>{{ scope.row.status }}</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-          align="center"
-          label="备注"
-          width="220"
-        >
-          <template slot-scope="scope">
-            <i class="el-icon-time" />
-            <span>kk{{ scope.row.notes }}</span>
-          </template>
-        </el-table-column>
-      </el-table>
-      <!-- </div> -->
+    <div class="psty1">
+      <el-button
+        v-waves
+        class="filter-item"
+        type="primary"
+        icon="el-icon-plus"
+        @click="handleCreate"
+      >新增</el-button>
     </div>
-    <div>中间</div>
-    <!-- 右侧 -->
-    <div class="ri" />
+    <div class="filter-container flex">
+      <div class="spstyd5">
+        <span>单据号：</span>
+        <el-input v-model="listQuery.document_no" placeholder="请输入单据号" style="width:90px" />
+      </div>
+      <div class="spsty1">
+        <span>日期：</span>
+        <el-date-picker v-model="start_time" type="date" placeholder="选择日期" value-format="timestamp" style="width:130px" />
+        <b>-</b>
+        <el-date-picker v-model="end_time" type="date" placeholder="选择日期" value-format="timestamp" style="width:130px" />
+      </div>
+      <div class="spsty2">
+        <span>出库类型：</span>
+        <el-select
+          v-model="listQuery.stock_type"
+          placeholder="出库类型"
+          clearable
+          class="filter-item"
+          style="width: 100px"
+        >
+          <el-option v-for="item in stock_list" :key="item.code" :label="item.name" :value="item.code" />
+        </el-select>
+      </div>
+      <el-button
+        v-waves
+        class="filter-item"
+        type="primary"
+        icon="el-icon-search"
+        @click="handleFilter"
+      >查询</el-button>
+      <el-radio-group v-model="listQuery.status" class="spsty3" @change="handleFilter">
+        <el-radio-button v-for="item of statusOptions" :key="item.id" :label="item.id">{{ item.name }}</el-radio-button>
+      </el-radio-group>
+    </div>
+    <el-table
+      :key="tableKey"
+      v-loading="listLoading"
+      :data="list"
+      border
+      highlight-current-row
+      style="width: 100%;"
+      :default-sort="{prop: 'updated_at', order: 'descending'}"
+    >
+      <el-table-column label="单据号" align="center" width="150" sortable prop="document_no">
+        <template slot-scope="scope">
+          <span class="spsty4" @click="handleUpdate(scope.row)">{{ scope.row.document_no }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="门店名称" align="center" width="165" prop="shop_name">
+        <template slot-scope="scope">
+          <span>{{ scope.row.shop_name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="对方单位 " align="center" width="165" prop="out_stock_shop">
+        <template slot-scope="scope">
+          <span>{{ scope.row.out_stock_shop }}</span>
+          <span>{{ scope.row.out_stock_company }}</span>
+          <span>{{ scope.row.out_stock_staff }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="出库类型" align="center" width="180" prop="stock_type">
+        <template slot-scope="scope">
+          <span>{{ scope.row.stock_type }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作人" align="center" width="120" prop="operator">
+        <template slot-scope="scope">
+          <span>{{ scope.row.operator }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作时间" align="center" width="160" sortable prop="updated_at">
+        <template slot-scope="scope">
+          <span>{{ scope.row.updated_at | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" align="center" width="80" prop="status">
+        <template slot-scope="scope">
+          <span>{{ scope.row.status }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="备注" align="center" width="auto" prop="remark">
+        <template slot-scope="scope">
+          <span>{{ scope.row.remark }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        fixed="right"
+        label="操作"
+        align="center"
+        width="180"
+        class-name="small-padding fixed-width"
+      >
+        <template slot-scope="scope">
+          <el-button v-show="scope.row.bCanUpdate" type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+          <el-button v-show="scope.row.bCanDelete" size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+      <product-drawer
+      v-model="drawerVisible"
+      :style="{left: '22%'}"
+      :get-data="changeData"
+      :stocklist="stock_list"
+      :dialogstatus="dialogStatus"
+      :putid="putid"
+      :orderstate="orderstate"
+      :b-can-update="bCanUpdate"
+      class="m-drawer"
+      @save="handleSave($event)"
+      @clear="drawerClear"
+      @close="closeDrawer"
+    />
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.page_size"
+      @pagination="getList"
+    />
+
   </div>
 </template>
 
 <script>
-import { fetchList } from '@/api/demo/article'
-
+import productDrawer from './component/storageOutDialog'
+// import productDrawer from './projectDrawer'
+import { stockList, createStock, deleteStock, getStocylist, stockCancel, stockCheck, getNewStock } from '@/api/ManageGoods/PutOutStorage'
+import waves from '@/directive/waves' // Waves directive
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+import PanThumb from '@/components/PanThumb'
+const statusOptions = [
+  { id: 1, name: '未完成' },
+  { id: 2, name: '已完成' },
+  { id: 3, name: '全部' }
+]
 export default {
-  name: 'InlineEditTable',
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      return statusMap[status]
-    }
-  },
+  name: 'InStock',
+  components: { PanThumb, Pagination, productDrawer },
+  directives: { waves },
   data() {
     return {
-      list: null,
-      listLoading: false, // true,
+      bCanUpdate: false,
+      orderstate: '',
+      putid: 0,
+      tableKey: 0,
+      start_time: '',
+      end_time: '',
+      list: [],
+      total: 0,
+      listLoading: true,
+      stock_list: null,
       listQuery: {
         page: 1,
-        limit: 10
+        start_time: '',
+        end_time: '',
+        stock_type: '',
+        page_size: 20,
+        status: 1,
+        document_no: ''
       },
-      datalist: [
-        {
-          // title: '测试001',
-          // pageviews: '类型001',
-          storename: 'aa店',
-          unit: '厦门湖里店',
-          stoerstyle: '采购入库',
-          username: '叶叶叶',
-          timestamp: '2019-11-11',
-          status: '已发货',
-          notes: ''
-        },
-        {
-          storename: 'bb店',
-          unit: '厦门思明店',
-          stoerstyle: '调拨入库',
-          username: '何何何',
-          timestamp: '2019-11-11',
-          status: '未发货',
-          notes: ''
-        },
-        {
-          storename: 'bb店',
-          unit: '厦门思明店',
-          stoerstyle: '调拨入库',
-          username: '何何何',
-          timestamp: '2019-11-11',
-          status: '未发货',
-          notes: ''
-        },
-        {
-          storename: 'bb店',
-          unit: '厦门思明店',
-          stoerstyle: '调拨入库',
-          username: '何何何',
-          timestamp: '2019-11-11',
-          status: '未发货',
-          notes: ''
-        },
-        {
-          storename: 'aa店',
-          unit: '厦门湖里店',
-          stoerstyle: '采购入库',
-          username: '叶叶叶',
-          timestamp: '2019-11-11',
-          status: '已发货',
-          notes: ''
-        },
-        {
-          storename: 'bb店',
-          unit: '厦门思明店',
-          stoerstyle: '调拨入库',
-          username: '何何何',
-          timestamp: '2019-11-11',
-          status: '未发货',
-          notes: ''
-        },
-        {
-          storename: 'aa店',
-          unit: '厦门湖里店',
-          stoerstyle: '采购入库',
-          username: '叶叶叶',
-          timestamp: '2019-11-11',
-          status: '已发货',
-          notes: ''
-        },
-        {
-          storename: 'bb店',
-          unit: '厦门思明店',
-          stoerstyle: '调拨入库',
-          username: '何何何',
-          timestamp: '2019-11-11',
-          status: '未发货',
-          notes: ''
-        },
-        {
-          storename: 'bb店',
-          unit: '厦门思明店',
-          stoerstyle: '调拨入库',
-          username: '何何何',
-          timestamp: '2019-11-11',
-          status: '未发货',
-          notes: ''
-        }
-      ],
-      datevalue: '',
-      form: {
-        categary: '',
-        complete: ''
+      statusOptions,
+      temp: {
+        version: '',
+        os: '',
+        path: ''
+      },
+      dialogFormVisible: false,
+      dialogEsc: false,
+      dialogStatus: '',
+      textMap: {
+        update: '编辑出库',
+        create: '添加出库'
+      },
+      changeData: {},
+      drawerVisible: false,
+      rules: {
       }
     }
   },
   created() {
-    // this.getList()
+    this.getList()
+    // this.getStocylist()
   },
+
   methods: {
-    _search() { },
-    getList() {
-      this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        const items = response.data.items
-        this.list = items.map(v => {
-          this.$set(v, 'edit', false) // https://vuejs.org/v2/guide/reactivity.html
-          v.originalTitle = v.title //  will be used when user click the cancel botton
-          return v
+    closeDrawer() {
+      // 关闭抽屉
+      this.drawerFlag = false
+    },
+    handleEnd(row) {
+      if (row.status !== 2) {
+        stockCheck(row.id).then(response => {
+          this.$message({
+            message: '撤销成功',
+            type: 'success' })
         })
-        this.listLoading = false
+      } else if (row.status == 2) {
+        this.$message.error('已经确定收货了！')
+      }
+    },
+    close() {
+      this.imagecropperShow = false
+    },
+    getList() {
+      this.list = []
+      this.listLoading = true
+      this.listQuery.start_time = this.start_time / 1000
+      if (this.end_time / 1000) {
+        this.listQuery.end_time = (this.end_time / 1000) + 86400
+      } else {
+        this.listQuery.end_time = (this.end_time / 1000)
+      }
+      getStocylist(this.listQuery).then(response => {
+        this.list = response.data.arrLog
+        this.total = parseInt(response.data.totalnum)
+        this.stock_list = response.data.arrType
+        console.log(response.data.arrLog)
+        setTimeout(() => {
+          this.listLoading = false
+        }, 0.5 * 1000)
       })
     },
-    cancelEdit(row) {
-      row.title = row.originalTitle
-      row.edit = false
-      this.$message({
-        message: 'The title has been restored to the original value',
+    drawerClear() {
+      this.drawerVisible = false
+      this.dialogType = ''
+      this.changeData = {}
+    },
+    changeMark(val) {
+      // - 切换遮罩状态
+      this.drawerVisible = val
+    },
+    handleFilter() {
+      this.listQuery.page = 1
+      console.log(this.listQuery)
+      this.getList()
+    },
+    handleModifyStatus(row, status) {
+      row.status = status
+      createStock(row).then(response => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        row.status = status
+        row.status_name = response.data.status_name
+      })
+    },
+    resetTemp() {
+      this.temp = {
+        version: '',
+        os: '',
+        path: ''
+      }
+    },
+    handleCreate() {
+      this.bCanUpdate = true
+      getNewStock().then(response => {
+        this.putid = 0
+        this.drawerVisible = true
+        this.dialogStatus = 'create'
+        setTimeout(() => {
+          this.listLoading = false
+        }, 0.5 * 1000)
+      }, reject => {
+      })
+    },
+    handleUpdate(row) {
+      console.log(row)
+      console.log('row')
+      if (row.bCanUpdate) {
+        this.bCanUpdate = true
+      } else {
+        this.bCanUpdate = false
+      }
+      this.putid = row.id
+      this.orderstate = row.status
+      this.drawerVisible = true
+      this.dialogStatus = 'update'
+    },
+    handleSave(obj) {
+      // 时间戳处理
+      if ((this.changeData.effect_time + '').length > 10) {
+        this.changeData.effect_time = Math.floor(
+          this.changeData.effect_time / 1000
+        )
+      }
+      if (!parseInt(this.changeData.points)) {
+        this.changeData.points = 0
+      }
+      console.log(obj)
+      if (this.dialogType === 'create') {
+        dataApi.create(obj).then(res => {
+          this.getList(this.listQuery)
+          this.drawerClear()
+          return
+        })
+      } else {
+        dataApi.update(obj, this.editId).then(res => {
+          this.getList(this.listQuery)
+          this.drawerClear()
+          return
+        })
+      }
+    },
+    createData() {
+      this.$refs['dataForm'].validate(valid => {
+        if (valid) {
+          createStock(this.temp).then(response => {
+            const addversion = response.data
+            addversion.version = this.temp.version
+            this.list.unshift(addversion)
+            this.dialogFormVisible = false
+            this.$message({
+              title: '成功',
+              message: '创建成功',
+              type: 'success'
+
+            })
+          })
+        }
+      })
+    },
+    handleDelete(row) {
+      this.$confirm('此操作将永久删除, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
         type: 'warning'
       })
-    },
-    confirmEdit(row) {
-      row.edit = false
-      row.originalTitle = row.title
-      this.$message({
-        message: 'The title has been edited',
-        type: 'success'
-      })
+        .then(() => {
+          deleteStock(row.id).then(() => {
+            this.$message({
+              message: '删除成功！',
+              type: 'success'
+            })
+            this.getList()
+          })
+        })
+        .catch(() => {})
     }
   }
 }
 </script>
 
-<style  lang='scss' scoped>
-.edit-input {
-  padding-right: 100px;
+<style rel="stylesheet/scss" lang="scss" scoped>
+.spstyd5{margin-right: 10px;margin-top: -8px;font-size: 14px;}
+.filter-container span{font-size: 14px;}
+.el-tagbox.el-tag {
+  margin-left: 10px;
 }
-.left {
-  border: solid 1px #dedede;
-  .sub-navbar {
-    padding: 0 10px;
-  }
+.flex{
+  display: flex;
+  align-items:center;
 }
-.block {
-  padding: 10px;
+.spstyp1 >>> .el-date-editor.el-input{
+  width: 120px;
+  padding-right: 15px;
 }
-.sub-navbar {
-  text-align: left;
+.spsty2{
+  margin-left: 25px;
+  margin-right: 25px;
 }
-
-.cancel-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
+.spsty3{
+  margin-left: 25px;
+  margin-top: -10px;
 }
-.el-form-item {
-  display: inline-block;
+.psty1{
+    margin-bottom: 12px;
+    margin-top: 20px;
+}
+.filter-container{
+  margin-bottom: 5px;
+}
+.spsty2 .filter-container .filter-item{
   margin-bottom: 0;
 }
-.minw {
-  min-width: 1040px;
+.spsty1{
+  align-self: baseline;
 }
-.mheigt {
-  min-height: 500px;
+.spsty2 span{vertical-align: 4px;}
+.spsty4{
+  color: #895DFE;
 }
 </style>

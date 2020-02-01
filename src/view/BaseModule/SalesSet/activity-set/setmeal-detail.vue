@@ -14,19 +14,21 @@
           <el-button @click="radioType()">确定</el-button>
         </div>
       </div>
-      <div v-if="this.radiotype == '1'">
-        <Severaloptions :list="setmealForm.pcom" @options="getType" />
+      <div v-show="radiotype == '1'">
+        <Severaloptions ref="severaloptions" :list="setmealForm.pcom" @options="getType" @handleOff="handleOff" />
       </div>
-      <div v-if="this.radiotype == '2'">
-        <Fullamount :list="setmealForm.pcom" @options="getType" />
+      <!-- <div v-show="this.radiotype == '2'"> -->
+      <div v-show="radiotype == '2'">
+        <Fullamount ref="fullamount" :list="setmealForm.pcom" @options="getType" @handleOff="handleOff" />
       </div>
-      <div v-if="this.radiotype == '3'">
-        <Term :list="setmealForm.pcom" @options="getType" />
+      <!-- <div v-show="this.radiotype == '3'"> -->
+      <div v-show="radiotype == '3'">
+        <Term ref="term" :list="setmealForm.pcom" @options="getType" @handleOff="handleOff" />
       </div>
-      <div v-if="this.radiotype == '4'">
+      <div v-show="radiotype == '4'">
         <Dis :list="setmealForm.dis" @dis="getType" />
       </div>
-      <div v-if="this.radiotype == '5'">
+      <div v-show="radiotype == '5'">
         <Recharge :list="setmealForm.recharge" @recharge="getType" />
       </div>
     </el-form>
@@ -34,6 +36,7 @@
 </template>
 
 <script>
+import { apiGetCardPackageDtlGupdate } from '@/api/BaseModule/SalesSet'
 import Recharge from './component/recharge'
 import Dis from './component/dis'
 import Term from './component/term'
@@ -51,6 +54,16 @@ export default {
   },
   data() {
     return {
+      dataObj: {
+        arrDetailType: [],
+        arrDiscountType: [],
+        arrPackage: [],
+        arrProduct: [],
+        arrProject: [],
+        arrType: [],
+        bUpdate: false
+      },
+      card_package_id: '',
       setmealForm: {
         recharge: [{
           activity_number: 'HDD20190101001',
@@ -128,13 +141,80 @@ export default {
       multipleSelection: []
     }
   },
+  created() {
+    //
+  },
   methods: {
+    // 关闭右侧栏
+    handleOff() {
+      this.card_package_id = ''
+      this.isShow = true
+      this.radiotype = ''
+      this.$emit('close')
+    },
+    // 从父组件获取id
+    init(card_package_id) {
+      this.card_package_id = card_package_id
+      this.getIsCreate()
+    },
+    // 是否新建还是修改
+    getIsCreate() {
+      apiGetCardPackageDtlGupdate({ card_package_id: this.card_package_id }).then(response => {
+        this.dataObj = response.data
+        if (this.dataObj.bUpdate) {
+          this.isShow = false
+          this.radiotype = this.dataObj.type
+          // eslint-disable-next-line eqeqeq
+          if (this.dataObj.type == 1) {
+            this.$refs.severaloptions.init(this.dataObj, this.card_package_id)
+          }
+          // eslint-disable-next-line eqeqeq
+          if (this.dataObj.type == 2) {
+            this.$refs.fullamount.init(this.dataObj, this.card_package_id)
+          }
+          // eslint-disable-next-line eqeqeq
+          if (this.dataObj.type == 3) {
+            this.$refs.term.init(this.dataObj, this.card_package_id)
+          }
+        }
+      })
+    },
     radioType() {
+      // eslint-disable-next-line eqeqeq
       if (this.radios == '') {
-        this.$message('不能为空')
+        this.$message('请先选择类型')
+        return false
+      }
+      // eslint-disable-next-line eqeqeq
+      if (this.card_package_id == '') {
+        this.$message('活动套餐主表id不存在，请新增或修改')
       } else {
         this.radiotype = this.radios
+        // eslint-disable-next-line eqeqeq
+        if (this.radiotype == 1) {
+          this.$refs.severaloptions.init(this.dataObj, this.card_package_id)
+        }
+        // eslint-disable-next-line eqeqeq
+        if (this.radiotype == 2) {
+          this.$refs.fullamount.init(this.dataObj, this.card_package_id)
+        }
+        // eslint-disable-next-line eqeqeq
+        if (this.radiotype == 3) {
+          this.$refs.term.init(this.dataObj, this.card_package_id)
+        }
         this.isShow = false
+        // eslint-disable-next-line eqeqeq
+        if (this.radiotype == 4) {
+          this.radiotype = ''
+          this.isShow = true
+          this.$message('此功能活动暂未开放！')
+        }
+        // eslint-disable-next-line eqeqeq
+        if (this.radiotype == 5) {
+          this.radiotype = ''
+          this.isShow = true
+          this.$message('此功能活动暂未开放！')
+        }
       }
     },
     submitForm(formName) {

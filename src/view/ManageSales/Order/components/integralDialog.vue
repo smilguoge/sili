@@ -19,26 +19,27 @@
         label="有效积分"
       >
         <el-input
-          v-model="integralData.num1"
+          v-model="integral_info.myIntegral"
           style="width:210px"
           disabled
         />
       </el-form-item>
       <el-form-item
         label="可用积分"
-        prop="integral"
       >
         <el-input
-          v-model="integralData.integral"
+          v-model="payIntegral"
           style="width:210px"
           placeholder="请输入积分"
+          type="number"
+          @input="changeValue"
         />
       </el-form-item>
       <el-form-item
         label="兑换金额"
       >
         <el-input
-          v-model="integralData.num3"
+          v-model="integral_info.prices"
           style="width:210px"
           disabled
         />
@@ -60,6 +61,7 @@
   </el-dialog>
 </template>
 <script>
+import { integralRefresh, integralConfirm } from '@/api/ManageSales/Order.js'
 export default {
   name: '',
   props: {
@@ -73,6 +75,8 @@ export default {
   data() {
     return {
       // -
+      customer_id: '',
+      goods_info: [],
       integralData: {},
       dialogVisible: false,
       rules: {
@@ -81,30 +85,47 @@ export default {
           { pattern: /^[\d]+$/, message: '积分只能是数字', trigger: 'blur' }
         ]
       },
-      flagTime: 0
-    }
-  },
-  watch: {
-    value(val) {
-      this.dialogVisible = val
+      flagTime: 0,
+      payIntegral: 0,
+      integral_info: {
+        myIntegral: '',
+        maxUseIntegral: '',
+        integralExchangeAmount: '',
+        integralExchangeRateSet: '',
+        payIntegral: 0,
+        prices: 0
+      }
     }
   },
   created() {
     // -
   },
   methods: {
+    // 从父组件获取信息
+    init(customer_id, arrs) {
+      this.customer_id = customer_id
+      this.goods_info = arrs
+      integralRefresh({ customer_id: customer_id, goods_info: arrs }).then(response => {
+        this.dialogVisible = true
+        this.integral_info = response.data
+        this.integral_info.payIntegral = response.data.myIntegral
+        this.payIntegral = response.data.myIntegral
+        this.integral_info.prices = this.payIntegral * this.integral_info.integralExchangeRateSet
+      })
+    },
+    changeValue(val) {
+      this.integral_info.payIntegral = val
+      this.integral_info.prices = val * this.integral_info.integralExchangeRateSet
+    },
+    // 确认兑换
     handleSubmit(formName) {
-      this.$refs[formName].validate(valid => {
-        if (valid) {
-          const curr = new Date()
-          if (curr - this.flagTime > 1000) {
-            this.handleCancel()
-            this.flagTime = curr
-          }
-        } else {
-          this.$message.warning('请正确填写必填项！')
-          return false
-        }
+      integralConfirm({ customer_id: this.customer_id, goods_info: this.goods_info, integral_info: this.integral_info }).then(response => {
+        this.$message({
+          message: '兑换成功！',
+          type: 'success'
+        })
+        this.$emit('setIntegral', this.integral_info.prices)
+        this.dialogVisible = false
       })
     },
     resetForm(formName) {
@@ -112,8 +133,7 @@ export default {
       this.integralData = {}
     },
     handleCancel() {
-      this.$parent.integralVisible = false
-      this.resetForm('integralData')
+      this.dialogVisible = false
     }
   }
 }

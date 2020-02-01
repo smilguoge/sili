@@ -9,33 +9,61 @@
         type="primary"
         size="medium"
         plain
-        @change="handleSelect(item)"
+        @click="handleSelect(item)"
       >{{ item.name }}</el-button>
     </el-scrollbar>
   </div>
 </template>
 <script>
+import { findData, apiPostSaleConfirm } from '@/api/ManageSales/Order.js'
 export default {
   name: '',
   data() {
     return {
       // -
-      btnData: [
-        { name: '1980', value: 1 },
-        { name: '2980', value: 2 },
-        { name: '5490', value: 3 },
-        { name: '测试套餐1', value: 4 },
-        { name: '万一有个套餐名字就这么长咋个办', value: 5 },
-        { name: '测试套餐3', value: 6 }
-      ]
+      btnData: [],
+      composeList: [],
+      customer_id: '',
+      include_package_ids: []
     }
   },
   created() {
-    // -
+    this.getList()
   },
   methods: {
+    // 从父组件获取用户 id
+    setUserId(id, arr) {
+      this.customer_id = id // 用户id
+      this.composeList = arr // 已经选择的套餐列表
+      if (this.composeList.length > 0) {
+        this.include_package_ids = this.composeList.map(item => {
+          if (item.goods_type === 2) {
+            return item.id
+          }
+        })
+      }
+    },
+    getList() {
+      findData().then(response => {
+        this.btnData = response.data
+      })
+    },
     handleSelect(ele) {
-      console.log(ele)
+      if (this.customer_id) {
+        apiPostSaleConfirm({ goods_id: ele.id, goods_type: 2, customer_id: this.customer_id, include_package_ids: this.include_package_ids }).then(response => { // 销售开单-品项添加审查
+          if (response.data.auth === 'forbidden') {
+            this.$message.error(response.data.reason[0])
+          }
+          if (response.data.auth === 'access') {
+            this.$emit('getAct', ele.id)
+          }
+        })
+      } else {
+        this.$message({
+          message: '请先选择用户',
+          type: 'warning'
+        })
+      }
     }
   }
 }

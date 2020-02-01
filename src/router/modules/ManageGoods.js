@@ -38,9 +38,25 @@ const Routers = {
         }
       },
       {
+        path: 'shop-goods-management',
+        name: 'shop-goods-management',
+        component: () => import('@/view/ManageGoods/Goods/shop-goods-management'),
+        meta: {
+          title: '铺货'
+        }
+      },
+      {
+        path: 'owe-goods-management',
+        name: 'owe-goods-management',
+        component: () => import('@/view/ManageGoods/Goods/owe-goods-management'),
+        meta: {
+          title: '欠货管理'
+        }
+      },
+      {
         path: 'inventory',
         name: 'inventory',
-        component: () => import('@/view/ManageGoods/Goods/index03'),
+        component: () => import('@/view/ManageGoods/Goods/inventory'),
         meta: {
           title: '盘点'
         }
@@ -50,7 +66,15 @@ const Routers = {
         name: 'int-out-detail',
         component: () => import('@/view/ManageGoods/Goods/index04'),
         meta: {
-          title: '出入库明细'
+          title: '出库明细单'
+        }
+      },
+      {
+        path: 'int-in-detail',
+        name: 'int-in-detail',
+        component: () => import('@/view/ManageGoods/Goods/index09'),
+        meta: {
+          title: '入库明细表'
         }
       },
       {
@@ -88,7 +112,7 @@ const Routers = {
         // {
         //   path: 'index09',
         //   name: 'index09',
-        //   component: () => import('@/view/ManageGoods/Goods/index09'),
+        //   component: () => import('@/view/ManageGoods/Goods/index10'),
         //   meta: {
         //     title: '效能明细分析'
         //   }

@@ -285,6 +285,7 @@ export default {
         })
       }
     },
+    // 弹窗时间
     // 新增
     submitFormadd() {
       this.$refs.upload2.$el.click()

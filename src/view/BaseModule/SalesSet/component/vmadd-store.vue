@@ -60,17 +60,18 @@
               </template>
             </el-table-column>
             <el-table-column label="使用条件" width="120">
-              <template slot-scope="scope">
-                <el-switch v-model="scope.row.is_using" active-value="0" inactive-value="1" />
+              <template slot-scope="{row}">
+                <el-switch v-model="row.is_using" active-value="0" inactive-value="1" />
               </template>
             </el-table-column>
-            <el-table-column label="上线张数" width="200">
-              <template slot-scope="scope">
+            <el-table-column label="上限张数" width="200">
+              <template slot-scope="{row}">
                 <el-input
-                  v-model="scope.row.number"
+                  v-model="row.number"
                   class="edit-input"
+                  :disabled="(row.is_using == 0 ? false : true)"
                   size="small"
-                  placeholder="长度5 数字"
+                  placeholder="请输入"
                 />
               </template>
             </el-table-column>
@@ -102,6 +103,12 @@ export default {
       default() {
         return []
       }
+    },
+    snycApplyShopName: {
+      type: String,
+      default() {
+        return ''
+      }
     }
   },
   data() {
@@ -121,7 +128,8 @@ export default {
           shop_id: [],
           is_using: 0,
           number: '',
-          status: 1
+          status: 1,
+          shop_name: ''
         }
       ],
       rules: {
@@ -143,6 +151,7 @@ export default {
   },
   mounted() {
     // this.restaurants = this.loadAll();
+    // var _vm = this;
     this.loadAll()
   },
   methods: {
@@ -182,7 +191,8 @@ export default {
         shop_id: [],
         is_using: 0,
         number: '',
-        status: 1
+        status: 1,
+        shop_name: ''
       }
       this.tablestore.unshift(list)
     },
@@ -212,7 +222,8 @@ export default {
     createFilter(queryString) {
       return restaurant => {
         return (
-          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+          restaurant.name.toLowerCase().indexOf(queryString.toLowerCase()) !==
+          -1
         )
       }
     },
@@ -224,12 +235,14 @@ export default {
       var result = null
       const v = 0
       data.forEach((item, index) => {
-        if (item.child.length <= 0) {
-          this.restaurants.push(item)
-        }
+        // if (item.child.length <= 0) {
+        //   this.restaurants.push(item)
+        // }
         if (item.child && item.child.length > 0) {
           result = this.loadAllfor(item.child)
           if (result) return result
+        } else {
+          this.restaurants.push(item)
         }
       })
     },
@@ -269,12 +282,17 @@ export default {
       const list = JSON.parse(JSON.stringify(this.tablestore))
       for (i = 0; i < this.tablestore.length; i++) {
         const data = []
+        const data_name = []
         list[i].shop_id.forEach((item, index) => {
           data.push(item.id)
+          data_name.push(item.name)
           return data
         })
         list[i].shop_id = data
+        list[i].shop_name = data_name
       }
+      const list_name = String(list[0].shop_name)
+      this.$emit('update:snycApplyShopName', list_name)
       this.$emit('update:snycApplyShop', list)
       this.AddStore()
     },

@@ -58,7 +58,7 @@
       </el-radio-group>
     </div>
     <!-- Table -->
-    <div class="table-wrap-ly" :style="{width:drawerVisible?'48%':'100%'}">
+    <div class="table-wrap-ly" :style="{width:drawerVisible?'50%':'100%'}">
       <el-table
         v-loading="listLoading"
         height="100%"
@@ -110,13 +110,14 @@
         <el-table-column
           label="操作"
           align="center"
-          width="170"
+          width="220"
           fixed="right"
           class-name="small-padding fixed-width"
         >
           <template slot-scope="{row}">
+            <el-button size="mini" type="warning" @click="handleView(row.id)">查看</el-button>
             <el-button size="mini" type="primary" @click="handleUpdate(row.id)">编辑</el-button>
-            <el-button size="mini" type="danger" @click="deleteData(row.id)">删除</el-button>
+            <el-button size="mini" type="danger" @click="handleDelete(row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -137,14 +138,15 @@
     </div>
 
     <project-drawer
+      ref="projectDrawer"
       v-model="drawerVisible"
       :get-data="changeData"
       :income="treeData"
+      :is-view="isView"
       @save="handleSave($event)"
       @clear="drawerClear"
-      @mark="changeMark($event)"
     />
-    <div v-show="drawerVisible" class="mark" />
+    <div v-show="maskVisible" class="mask" />
   </div>
 </template>
 
@@ -183,8 +185,10 @@ export default {
         code: ''
       },
 
+      isView: false,
       dialogType: '',
       drawerVisible: false,
+      maskVisible: false,
       listLoading: false,
       editId: null
     }
@@ -192,7 +196,7 @@ export default {
   watch: {
     income(data) {
       this.treeData = data // 产品类别树
-      console.log('father', this.treeData)
+      // console.log('father', this.treeData)
     }
   },
   created() {
@@ -221,6 +225,10 @@ export default {
     },
     handleUpdate(id) {
       // - 修改
+      if (this.isView) {
+        this.$message.warning('请先关闭详情视图再进行操作')
+        return
+      }
       // - request
       this.listLoading = true
       // - 请求选项数据
@@ -235,12 +243,37 @@ export default {
         this.editId = id
         this.dialogType = 'edit'
         this.drawerVisible = true
+        this.maskVisible = true
+      })
+    },
+    handleView(id) {
+      // - 查看
+      // - request
+      this.listLoading = true
+      // - 请求选项数据
+      dataApi.view(id).then(res => {
+        const items = res.data
+        this.changeData = JSON.parse(JSON.stringify(items))
+        this.changeData.effect_time =
+          (items.effect_time + '').length > 10
+            ? items.effect_time
+            : items.effect_time * 1000
+        this.listLoading = false
+        this.editId = id
+        this.dialogType = 'edit'
+        this.drawerVisible = true
+        this.isView = true
       })
     },
     handleCreate() {
       // - 新建
+      if (this.isView) {
+        this.$message.warning('请先关闭详情视图再进行操作')
+        return
+      }
       // - 请求选项数据
       this.drawerVisible = true
+      this.maskVisible = true
       this.dialogType = 'create'
       this.changeData = JSON.parse(JSON.stringify(this.defaultData))
     },
@@ -255,18 +288,24 @@ export default {
       if (this.dialogType === 'create') {
         dataApi.create(obj).then(res => {
           this.getList(this.listQuery)
+          this.$message.success(res.message)
           this.drawerClear()
           return
         })
       } else {
         dataApi.update(obj, this.editId).then(res => {
           this.getList(this.listQuery)
+          this.$message.success(res.message)
           this.drawerClear()
           return
         })
       }
     },
-    deleteData(id) {
+    handleDelete(id) {
+      if (this.isView) {
+        this.$message.warning('请先关闭详情视图再进行操作')
+        return
+      }
       // - request
       this.$confirm('此操作将永久删除该数据, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -280,14 +319,13 @@ export default {
         })
         .catch(res => {})
     },
-    changeMark(val) {
-      // - 切换遮罩状态
-      this.drawerVisible = val
-    },
     drawerClear() {
       this.drawerVisible = false
+      this.maskVisible = false
+      this.isView = false
       this.dialogType = ''
       this.changeData = {}
+      // this.$refs['productDrawer'].resetForm('changeData') // FIXME: 关闭时调用子组件resetForm方法清除表单验证报错
     },
     handleSizeChange(val) {
       this.listQuery.page_size = val
@@ -315,7 +353,7 @@ export default {
   height: 100%;
   overflow: hidden;
 }
-.mark {
+.mask {
   background-color: #fff;
   position: absolute;
   top: 0;

@@ -1,11 +1,6 @@
 <template>
   <div class="e-container">
-    <el-table
-      :data="tableList"
-      style="width: 100%"
-      height="300px"
-      max-height="350px"
-    >
+    <el-table :data="tableList" style="width: 100%" height="300px" max-height="350px">
       <!-- 明细表格 -->
       <el-table-column type="expand">
         <template slot-scope="props">
@@ -45,7 +40,9 @@
             </el-table-column>
             <el-table-column label="有效期" width="180">
               <template slot-scope="{row}">
-                <template v-if="row.validity == 1">{{row.validity_start_at | formatDate}}~{{row.validity_start_at | formatDate}}</template>
+                <template
+                  v-if="row.validity == 1"
+                >{{row.validity_start_at | formatDate}}~{{row.validity_start_at | formatDate}}</template>
                 <template v-if="row.validity == 2">{{row.period}}</template>
                 <template v-if="row.validity == 3">现场做</template>
               </template>
@@ -69,6 +66,7 @@
                 >编辑</el-button>
                 <el-button
                   size="mini"
+                  type="danger"
                   @click="openDialog('childrenDelete',scope.row, scope.$index, props.$index)"
                 >删除</el-button>
               </template>
@@ -80,14 +78,19 @@
         <!-- 父级表头 -->
         <template slot="header">
           <span>赠送明细</span>
-          <el-button style="float:right;" size="mini" @click="openDialog('create')">新增</el-button>
+          <el-button
+            style="float:right;"
+            size="mini"
+            type="primary"
+            @click="openDialog('create')"
+          >新增</el-button>
         </template>
         <!-- 父级数据 -->
         <template slot-scope="scope">
           ({{ scope.row.sale_start_at | formatDate}}~{{scope.row.sale_end_at | formatDate}})
-          <span v-if="scope.row.is_unlimited == 1">
-            不限购买明细
-          </span>
+          <span
+            v-if="scope.row.is_unlimited == 1"
+          >不限购买明细</span>
           <span v-if="scope.row.is_unlimited == 0">
             <!-- 购买{{scope.row.saleSetdtl.gtype}} -->
             购买....
@@ -96,10 +99,14 @@
           购买金额{{scope.row.money}}元,
           购买次数{{scope.row.times}}次
           <div style="display:inline-block;float:right">
-            <el-button size="mini" @click="openDialog('childrenCreate', {}, scope.$index)">添加明细</el-button>
             <el-button
               size="mini"
-              type="danger"
+              type="primary"
+              @click="openDialog('childrenCreate', {}, scope.$index)"
+            >添加明细</el-button>
+            <el-button
+              size="mini"
+              type="primary"
               @click="openDialog('edit', scope.row, scope.$index)"
             >编辑</el-button>
             <el-button
@@ -247,18 +254,6 @@ export default {
         default:
           break;
       }
-    },
-    formatClass(data) {
-      for (let i = 0; i < data.length; i++) {
-        if (data[i] == 1) return "普通";
-        if (data[i] == 2) return "尊享卡";
-      }
-    },
-    formatStar(data) {
-      for (let i = 0; i < data.length; i++) {
-        if (data[i] == 1) return "普通";
-        if (data[i] == 2) return "一星";
-      }
     }
   },
   watch: {
@@ -281,14 +276,34 @@ export default {
     echoShopData(val) {
       if (val && val.length > 0) {
         for (let i = 0; i < val.length; i++) {
-          val[i].sale_start_at = val[i].sale_start_at.length <= 10 ? val[i].sale_start_at * 1000 : val[i].sale_start_at;
-          val[i].sale_end_at = val[i].sale_end_at.length <= 10 ? val[i].sale_end_at * 1000 : val[i].sale_end_at;
+          val[i].sale_start_at =
+            val[i].sale_start_at.length <= 10
+              ? val[i].sale_start_at * 1000
+              : val[i].sale_start_at;
+          val[i].sale_end_at =
+            val[i].sale_end_at.length <= 10
+              ? val[i].sale_end_at * 1000
+              : val[i].sale_end_at;
           if (val[i].senddtl && val[i].senddtl.length > 0) {
-            for(let j = 0; j < val[i].senddtl.length; j++) {
-              val[i].senddtl[j].validity_start_at = val[i].senddtl[j].validity_start_at.length <= 10 ? val[i].senddtl[j].validity_start_at * 1000 : val[i].senddtl[j].validity_start_at;
-              val[i].senddtl[j].validity_end_at = val[i].senddtl[j].validity_end_at.length <= 10 ? val[i].senddtl[j].validity_end_at * 1000 : val[i].senddtl[j].validity_end_at;
-              val[i].senddtl[j].dic_customer_grade = val[i].senddtl[j].dic_customer_grade.split(',').map(Number);
-              val[i].senddtl[j].dic_customer_star = val[i].senddtl[j].dic_customer_star.split(',').map(Number)
+            for (let j = 0; j < val[i].senddtl.length; j++) {
+              val[i].senddtl[j].validity_start_at =
+                val[i].senddtl[j].validity_start_at.length <= 10
+                  ? val[i].senddtl[j].validity_start_at * 1000
+                  : val[i].senddtl[j].validity_start_at;
+              val[i].senddtl[j].validity_end_at =
+                val[i].senddtl[j].validity_end_at.length <= 10
+                  ? val[i].senddtl[j].validity_end_at * 1000
+                  : val[i].senddtl[j].validity_end_at;
+              val[i].senddtl[j].dic_customer_grade = val[i].senddtl[
+                j
+              ].dic_customer_grade
+                .split(",")
+                .map(Number);
+              val[i].senddtl[j].dic_customer_star = val[i].senddtl[
+                j
+              ].dic_customer_star
+                .split(",")
+                .map(Number);
             }
           }
         }
@@ -312,13 +327,12 @@ export default {
       tableList: []
     };
   },
-  created() {
-  },
+  created() {},
   methods: {
     // - 回显
     gradeBack(optionArr, dicArr) {
       const getData = optionArr.filter(item => dicArr.includes(item.value));
-      return getData.map(item => item.label).join(',')
+      return getData.map(item => item.label).join(",");
     },
 
     // 弹框集中处理
@@ -361,25 +375,6 @@ export default {
       }
     },
 
-    load(tree, treeNode, resolve) {
-      setTimeout(() => {
-        resolve([
-          {
-            id: 31,
-            date: "2016-05-01",
-            name: "王小虎",
-            address: "上海市普陀区金沙江路 1519 弄"
-          },
-          {
-            id: 32,
-            date: "2016-05-01",
-            name: "王小虎",
-            address: "上海市普陀区金沙江路 1519 弄"
-          }
-        ]);
-      }, 1000);
-    },
-
     // 关闭弹窗
     close() {
       this.dialogVisible = false;
@@ -411,8 +406,8 @@ export default {
           if (i == this.tableIndex) {
             for (let j = 0; j < this.tableList[i].senddtl.length; j++) {
               if (j == this.detailIndex) {
-                this.tableList[i].senddtl.splice(this.detailIndex, 1, data)
-                this.$message.success('编辑成功!');
+                this.tableList[i].senddtl.splice(this.detailIndex, 1, data);
+                this.$message.success("编辑成功!");
               }
             }
           }
@@ -421,7 +416,7 @@ export default {
         for (let k = 0; k < this.tableList.length; k++) {
           if (k == this.tableIndex) {
             this.tableList[k].senddtl.push(data);
-            this.$message.success('添加成功!');
+            this.$message.success("添加成功!");
           }
         }
       }

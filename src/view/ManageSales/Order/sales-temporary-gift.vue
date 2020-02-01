@@ -3,14 +3,14 @@
   <div class="app-container">
     <div class="filter-container clearfix">
       <el-input
-        v-model="listQuery.name1"
+        v-model="listQuery.customer_name"
         class="input-160 filter-item"
         placeholder="请输入会员姓名"
         prefix-icon="el-icon-search"
         clearable
       />
       <el-date-picker
-        v-model="timearr"
+        v-model="listQuery.ts"
         type="daterange"
         class="dateCompontent filter-item"
         unlink-panels
@@ -61,44 +61,44 @@
           align="center"
           fixed="left"
         >
-          <template slot-scope="{row}">{{ row.name }}</template>
+          <template slot-scope="{row}">{{ row.customer_shop_name }}</template>
         </el-table-column>
         <el-table-column
           label="会员姓名"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.name }}</template>
+          <template slot-scope="{row}">{{ row.customer_name }}</template>
         </el-table-column>
         <el-table-column
           label="会员编号"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.mennum }}</template>
+          <template slot-scope="{row}">{{ row.customer_no }}</template>
         </el-table-column>
         <el-table-column
           label="赠送内容"
           align="center"
           min-width="140px"
         >
-          <template slot-scope="{row}">{{ row.shopname }}</template>
+          <template slot-scope="{row}">{{ handlerGoodsInfo(row.goods_info) }}</template>
         </el-table-column>
         <el-table-column
           label="赠送类型"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.proname }}</template>
+          <template slot-scope="{row}">{{ row.source }}</template>
         </el-table-column>
         <el-table-column
           label="赠送人"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.buynum }}</template>
+          <template slot-scope="{row}">{{ row.send_staff_name }}</template>
         </el-table-column>
         <el-table-column
           label="当前审批人"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.synum }}</template>
+          <template slot-scope="{row}">{{ row.approver.join(',') }}</template>
         </el-table-column>
         <el-table-column
           label="审批状态"
@@ -106,12 +106,11 @@
         >
           <template slot-scope="{row}">
             <el-button
-              :type="row.state==1?'success':'danger'"
+              :type="getApproveViewType(row.approve_status)"
               size="mini"
               plain
-              @click="openDialog"
             >
-              {{ row.state==1?'正常':'未通过' }}
+              {{ row.approve_status }}
             </el-button>
           </template>
         </el-table-column>
@@ -119,14 +118,14 @@
           label="操作人"
           align="center"
         >
-          <template slot-scope="{row}">{{ row.oname }}</template>
+          <template slot-scope="{row}">{{ row.operator }}</template>
         </el-table-column>
         <el-table-column
           label="操作时间"
           align="center"
           min-width="120px"
         >
-          <template slot-scope="{row}">{{ row.approve_at | parseTime('{y}-{m}-{d} {h}:{i}') }}</template>
+          <template slot-scope="{row}">{{ row.updated_at | parseTime('{y}-{m}-{d} {h}:{i}') }}</template>
         </el-table-column>
         <el-table-column
           label="操作"
@@ -166,61 +165,24 @@
 <script>
 import temporaryGiftDialog from './components/temporaryGiftDialog'
 import giftApprovalDialog from './components/giftApprovalDialog'
-import { customerTransfer } from '@/api/ManageCustomer/CustomerManage'
-const transferApi = new customerTransfer()
+import { tempSendList, tempSendDisable } from '@/api/ManageCustomer/temp'
+// import { customerTransfer } from '@/api/ManageCustomer/CustomerManage'
+// const transferApi = new customerTransfer()
 
 export default {
   name: 'InlineEditTable',
   components: { temporaryGiftDialog, giftApprovalDialog },
   data() {
     return {
-      list: null,
+      list: [],
       changeData: {},
-      testList: [
-        {
-          ordernum: 'Test037036',
-          mennum: 'Text001001',
-          name: '张三',
-          shopname: '新南分院',
-          proname: '测试项目1',
-          buynum: '100283115',
-          synum: '100',
-          dnum: '90',
-          money: '288.00',
-          quantity: '8988.00',
-          paydate: 1532323442111,
-          sday: 1592323442111,
-          state: '1',
-          oname: '乐乐',
-          approve_at: 1543211231222
-        },
-        {
-          ordernum: 'Test037000',
-          mennum: 'Text001021',
-          name: '李四',
-          shopname: '锦里分院',
-          proname: '测试项目2',
-          buynum: '100283431',
-          synum: '100',
-          dnum: '90',
-          money: '199.00',
-          quantity: '6888.00',
-          paydate: 1532321254001,
-          sday: 1602321254001,
-          state: '2',
-          oname: '康康',
-          approve_at: 1543211231222
-        }
-      ],
-
       // total: null,
       total: 1,
       listQuery: {
         page: 1,
         page_size: 10,
-        name: '',
-        start_at: '',
-        end_at: ''
+        customer_name: '',
+        ts: []
       },
 
       // 配置参数
@@ -234,30 +196,65 @@ export default {
     this.getList(this.listQuery)
   },
   methods: {
-    test() {
-      console.log(1)
+    handlerGoodsInfo(goodsInfo) {
+      var goodsObj = JSON.parse(goodsInfo)
+      var goods = []
+      if (goodsObj.length > 0) {
+        for (let index = 0; index < goodsObj.length; index++) {
+          goods.push(goodsObj[index]['name'] + ' (' + goodsObj[index]['quantity'] + ')')
+        }
+        return goods.join(';')
+      } else {
+        return ''
+      }
     },
-
+    getApproveViewType(state) {
+      switch (state) {
+        case '审批中':
+          return 'primary'
+          // eslint-disable-next-line no-unreachable
+          break
+        case '审批通过':
+          return 'success'
+          // eslint-disable-next-line no-unreachable
+          break
+        // eslint-disable-next-line no-duplicate-case
+        case '审批拒绝':
+          return 'danger'
+          // eslint-disable-next-line no-unreachable
+          break
+        // eslint-disable-next-line no-duplicate-case
+        case '审批撤销':
+          return 'info'
+          // eslint-disable-next-line no-unreachable
+          break
+        default:
+          return ''
+          // eslint-disable-next-line no-unreachable
+          break
+      }
+    },
     getList(params) {
       this.listLoading = true
+      var _this = this
+      // eslint-disable-next-line no-unused-vars
+      var data = {
+        page: params.page,
+        page_size: params.page_size,
+        customer_name: params.customer_name
+      }
+      if (params.ts && params.ts.length > 0) {
+        data.start_ts = params.ts[0]
+        data.end_ts = params.ts[1]
+      }
       setTimeout(() => {
-        this.list = this.testList
-        this.listLoading = false
+        tempSendList(data).then(res => {
+          _this.list = res.data.send_records
+          _this.total = parseInt(res.data.total_count)
+          _this.listLoading = false
+        })
       }, 1300)
-      // transferApi.index(params).then(res => {
-      //   const items = res.data
-      //   if (items.list.lenght !== 0) {
-      //     this.list = items.list
-      //     this.total = parseInt(items.count)
-      //     this.listLoading = false
-      //   } else {
-      //     this.list = []
-      //     this.$message.warning('没有更多数据')
-      //     this.listLoading = false
-      //   }
-      // })
     },
-
     submitSearch() {
       if (this.timearr && this.timearr.length > 0) {
         this.listQuery.start_at = Math.floor(this.timearr[0] / 1000)
@@ -266,8 +263,8 @@ export default {
         this.listQuery.start_at = ''
         this.listQuery.end_at = ''
       }
+      console.log(this.listQuery)
       // FIXME: 待删除
-      this.$message.warning('功能尚在开发中')
       this.getList(this.listQuery)
     },
 
@@ -283,8 +280,33 @@ export default {
       }
     },
 
-    revokeSubmit() {
+    revokeSubmit(id) {
       // -
+      this.$confirm('该操作将进行撤销动作,是否继续?', '撤销', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        tempSendDisable({ id: id }).then(res => {
+          if (res.code === 200) {
+            this.$message({
+              type: 'success',
+              message: res.message
+            })
+            this.getList(this.listQuery)
+          } else {
+            this.$message({
+              type: 'warning',
+              message: res.message
+            })
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消撤销'
+        })
+      })
     },
 
     // - 分页

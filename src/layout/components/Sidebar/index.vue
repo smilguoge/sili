@@ -7,7 +7,6 @@
       :collapse="isCollapse"
       :background-color="variables.menuBg"
       :text-color="variables.menuText"
-      :unique-opened="false"
       :active-text-color="variables.menuActiveText"
       :collapse-transition="false"
       mode="vertical"
@@ -23,6 +22,7 @@ import { mapGetters } from 'vuex'
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
 import variables from '@/styles/variables.scss'
+import $ from 'jquery'
 
 export default {
   components: { SidebarItem, Logo },
@@ -37,7 +37,7 @@ export default {
       // if set path, the sidebar will highlight the path you set
       if (meta.activeMenu) {
         return meta.activeMenu
-      }
+      } 
       return path
     },
     showLogo() {
@@ -49,6 +49,12 @@ export default {
     isCollapse() {
       return !this.sidebar.opened
     }
+  },
+  mounted() {
+    // 涉及到组件改造...暂时这样处理...
+    $('.main-container').on('click', function() {
+      $('.is-active').removeClass('is-active')
+    })
   }
 }
 </script>

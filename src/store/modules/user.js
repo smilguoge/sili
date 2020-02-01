@@ -1,7 +1,7 @@
 import { login, logout, getInfo } from '@/api/user'
-import { 
-  getToken, setToken, removeToken, 
-  getMember, setMember, removeMember 
+import {
+  getToken, setToken, removeToken,
+  getMember, setMember, removeMember
 } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 
@@ -37,6 +37,7 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password, group: 'erp' }).then(response => {
+        console.log(response, '登陆')
         const { data } = response
         commit('SET_TOKEN', data.access_token)
         commit('SET_MEMBER', data.member)
@@ -72,8 +73,8 @@ const actions = {
         reject(error)
       })
     }) */
-    let member = getMember();
-    member['roles'] = ['admin'];
+    const member = getMember()
+    member['roles'] = ['admin']
     commit('SET_ROLES', member.roles)
     commit('SET_NAME', member.name)
     commit('SET_AVATAR', member.avator || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
@@ -109,10 +110,10 @@ const actions = {
       removeMember()
       resolve()
     })
-  },
+  }
 
   // dynamically modify permissions
-  /*changeRoles({ commit, dispatch }, role) {
+  /* changeRoles({ commit, dispatch }, role) {
     return new Promise(async resolve => {
       const token = role + '-token'
 

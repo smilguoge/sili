@@ -2,7 +2,7 @@
   <el-drawer
     class="dialog-wrap-ly"
     direction="rtl"
-    size="50%"
+    size="95%"
     close-on-press-escape
     :show-close="false"
     :wrapper-closable="false"
@@ -27,7 +27,12 @@
               <el-row :gutter="30">
                 <el-col :span="12">
                   <el-form-item label="项目名称" prop="name">
-                    <el-input v-model="changeData.name" class="input-190" placeholder="请输入项目名称" />
+                    <el-input
+                      v-model="changeData.name"
+                      class="input-190"
+                      placeholder="请输入项目名称"
+                      @input="nameTransition"
+                    />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
@@ -98,11 +103,6 @@
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="存卡数量" prop="card_count">
-                    <el-input v-model="changeData.card_count" placeholder="请输入存卡数量" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
                   <el-form-item label="生效时间" prop="effect_time">
                     <el-date-picker
                       v-model="changeData.effect_time"
@@ -112,11 +112,6 @@
                       clearable
                       placeholder="请选择生效时间"
                     />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="安全库存" prop="safe_stock">
-                    <el-input v-model="changeData.safe_stock" placeholder="请输入安全库存数量" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
@@ -139,10 +134,11 @@
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="项目状态" prop="status">
-                    <el-radio-group v-model="changeData.status">
-                      <el-radio label="1">启用</el-radio>
-                      <el-radio label="0">停用</el-radio>
-                    </el-radio-group>
+                    <el-switch
+                      v-model="changeData.status"
+                      active-value="1"
+                      inactive-value="0"
+                    />
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -166,14 +162,15 @@
 
     </el-scrollbar>
     <div class="drawer-footer">
-      <el-button type="primary" @click="submitForm('changeData')">保 存</el-button>
       <el-button type="danger" @click="handleCancel">取 消</el-button>
+      <el-button v-show="!isView" type="primary" @click="submitForm('changeData')">保 存</el-button>
     </div>
 
   </el-drawer>
 </template>
 
 <script>
+import vPinyin from '@/component/toPinYin/vue-py.js'
 import { projectData } from '@/api/BaseModule/ProjectProduct'
 const dataApi = new projectData()
 
@@ -199,6 +196,12 @@ export default {
       required: true,
       default() {
         return []
+      }
+    },
+    isView: {
+      type: Boolean,
+      default() {
+        return false
       }
     }
   },
@@ -259,7 +262,7 @@ export default {
           },
           {
             pattern: /^[a-zA-Z0-9\.]+$/,
-            message: 'ERP编码由数字、小数点以及字母组成',
+            message: '编码由数字、小数点以及字母组成',
             trigger: 'blur'
           }
         ],
@@ -315,11 +318,6 @@ export default {
           }
         ],
         spen_time: [
-          // {
-          //   required: true,
-          //   message: "请输入项目用时",
-          //   trigger: "blur"
-          // },
           {
             max: 5,
             message: '最多输入 5 个字符',
@@ -328,35 +326,6 @@ export default {
           {
             pattern: /^[\d]+$/,
             message: '项目用时只能是数字',
-            trigger: 'blur'
-          }
-        ],
-        card_count: [
-          // {
-          //   required: true,
-          //   message: "请输入存卡数量",
-          //   trigger: "blur"
-          // },
-          {
-            max: 5,
-            message: '最多输入 5 个字符',
-            trigger: 'blur'
-          },
-          {
-            pattern: /^[\d]+$/,
-            message: '存卡数量只能是数字',
-            trigger: 'blur'
-          }
-        ],
-        safe_stock: [
-          {
-            max: 5,
-            message: '最多输入 5 个字符',
-            trigger: 'blur'
-          },
-          {
-            pattern: /^[\d]+$/,
-            message: '安全库存只能是数字',
             trigger: 'blur'
           }
         ],
@@ -402,7 +371,6 @@ export default {
   watch: {
     value(val) {
       this.drawerVisible = val
-      this.$emit('mark', val)
     },
     getData(val) {
       this.changeData = val
@@ -421,19 +389,22 @@ export default {
     },
     // - 提交验证
     submitForm(formName) {
-      this.$refs[formName].validate(valid => {
-        if (valid) {
+      const curr = new Date()
+      if (curr - this.flagTime > 1000) {
+        this.$refs[formName].validate(valid => {
+          if (valid) {
           // - 提交请求
-          const curr = new Date()
-          if (curr - this.flagTime > 1000) {
+            if (!this.changeData.spen_time) {
+              this.changeData.spen_time = 0
+            }
             this.$emit('save', this.changeData)
-            this.flagTime = curr
+          } else {
+            this.$message.warning('请正确填写必填项！')
+            return false
           }
-        } else {
-          this.$message.warning('请正确填写必填项！')
-          return false
-        }
-      })
+        })
+        this.flagTime = curr
+      }
     },
     resetForm(formName) {
       this.$refs[formName].resetFields()
@@ -451,9 +422,23 @@ export default {
     handleNodeClick(node) {
       // - Select-Tree 选择
       if (!node.hasOwnProperty('child')) {
-        this.changeData.project_class_name = node.name
+        this.$set(this.changeData, 'project_class_name', node.name)
         this.changeData.project_class_id = node.id
       }
+    },
+
+    nameTransition(name) {
+      // 提取名称首字母
+      const changeName = vPinyin.chineseToPinYin(name)
+      let resName = ''
+      for (var i = 0; i < changeName.length; i++) {
+        var c = changeName.charAt(i)
+        if (/^[A-Z\d]+$/.test(c)) {
+          resName += c
+        }
+      }
+      this.changeData.chinese_initial = resName
+      // console.log('缩写获取', resName)
     }
   }
 }
@@ -463,6 +448,8 @@ export default {
 .dialog-wrap-ly {
   position: absolute;
   height: 100%;
+  width: 50%;
+  left: initial !important;
 
   .el-drawer__header {
     display: none;
@@ -487,8 +474,13 @@ export default {
   }
 }
 </style>
-<style lang="css">
-.store-dialog-ly .el-form-item__error {
-  width: 210px;
+<style lang="scss">
+.dialog-wrap-ly {
+  .el-form-item__error {
+    width: 210px;
+  }
+  .el-scrollbar__wrap {
+    overflow-x: hidden;
+  }
 }
 </style>

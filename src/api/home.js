@@ -28,3 +28,44 @@ export function statistical(params) {
   })
 }
 
+// money get
+export function MoneydataGet(data) {
+  return request({
+    url: '/v1/capital-transfers/gcreate',
+    method: 'get',
+    params: data
+  })
+}
+// money get 员工
+
+export function MoneylistGet(data) {
+  return request({
+    url: '/v1/staff/search',
+    method: 'get',
+    params: data
+  })
+}
+// money post
+export function MoneydataPost(data) {
+  return request({
+    url: '/v1/capital-transfers/create',
+    method: 'post',
+    data
+  })
+}
+// money table data get
+export function Moneytableget(data) {
+  return request({
+    url: '/v1/capital-transfers/index',
+    method: 'get',
+    params: data
+  })
+}
+// money 检查
+export function Moneycheck_up(data) {
+  return request({
+    url: '/v1/capital-transfers/check',
+    method: 'post',
+    data
+  })
+}

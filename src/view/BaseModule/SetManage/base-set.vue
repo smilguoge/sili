@@ -216,7 +216,7 @@ export default {
       changeData: {
         listOption: []
       },
-      childrenOptionData: {},
+      childrenOptionData: { status: '1' },
       multipleSelection: [],
 
       // - 分页
@@ -251,13 +251,8 @@ export default {
             trigger: 'blur'
           },
           {
-            max: 5,
-            message: '最多输入 5 个字符',
-            trigger: 'blur'
-          },
-          {
-            pattern: /^[\u2E80-\u9FFF]+$/,
-            message: '选项名称只能是汉字',
+            max: 10,
+            message: '最多输入 10 个字符',
             trigger: 'blur'
           }
         ],
@@ -271,13 +266,6 @@ export default {
             pattern: /^[\d]+$/,
             message: '排序号只能是数字',
             trigger: 'blur'
-          }
-        ],
-        status: [
-          {
-            required: true,
-            message: '请选择选项状态',
-            trigger: 'change'
           }
         ]
       },
@@ -542,7 +530,7 @@ export default {
     // - 清空表单
     resetForm(formName) {
       this.$refs[formName].resetFields()
-      this.childrenOptionData = {}
+      this.childrenOptionData = { status: '1' }
     },
 
     handleSizeChange(val) {

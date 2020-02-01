@@ -20,35 +20,32 @@ const modules = modulesFiles.keys().reduce((modules, modulePath) => {
 const store = new Vuex.Store({
   modules,
   getters,
-  mutations:{
-    chage(state,data){
-      state.option=data;
+  mutations: {
+    chage(state, data) {
+      state.option = data
     }
   },
-  state:{
+  state: {
     // 是否修改(员工档案)
-    isEdit:null,
+    isEdit: null,
     // 下拉选项(员工档案)
-    option:null,
+    option: null,
     // 修改id(员工档案)
-    editId:null,
+    editId: null,
     // 是否弹窗(员工档案)
-    isTanc:false,
+    isTanc: false,
     // 是否显示儿子(员工档案)
-    isComponent:false,
+    isComponent: false,
     // 修改id(顾客管理)
-    isCustomerId:null,
+    isCustomerId: null,
     // 是否修改(顾客管理)
-    isCustomer:null
-
-   
+    isCustomer: null
 
   },
-  actions:{
-    changeOption(store,data){
-      store.commit('chage',data)
+  actions: {
+    changeOption(store, data) {
+      store.commit('chage', data)
     }
-  
   }
 })
 

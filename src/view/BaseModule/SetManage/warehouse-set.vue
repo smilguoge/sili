@@ -18,8 +18,16 @@
         stripe
         border
       >
-        <el-table-column prop="shop_name" label="门店名称" align="center" />
-        <el-table-column prop="name" label="仓库名称" align="center" />
+        <el-table-column label="门店名称" align="center">
+          <template slot-scope="{row}">
+            <span>{{ row.shop_name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="仓库名称" align="center">
+          <template slot-scope="{row}">
+            <span>{{ row.name }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="状态" align="center">
           <template slot-scope="{row}">
             <el-tag
@@ -28,9 +36,20 @@
             >{{ row.status==1?'启用':'停用' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="operator_name" label="操作人" align="center" />
+        <el-table-column label="是否默认" align="center">
+          <template slot-scope="{row}">
+            <span>{{ row.is_default==1?'是':'否' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作人" align="center">
+          <template slot-scope="{row}">
+            <span>{{ row.operator_name }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作时间" align="center">
-          <template slot-scope="{row}">{{ row.updated_at | parseTime('{y}-{m}-{d} {h}:{i}') }}</template>
+          <template slot-scope="{row}">
+            <span>{{ row.updated_at | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          </template>
         </el-table-column>
         <el-table-column label="操作" width="160" fixed="right" align="center">
           <template slot-scope="scope">
@@ -88,6 +107,14 @@
           </el-form-item>
         </el-col>
         <el-col :span="23">
+          <el-form-item label="是否默认" prop="is_default">
+            <el-radio-group v-model="changeData.is_default">
+              <el-radio label="1">是</el-radio>
+              <el-radio label="0">否</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-col>
+        <el-col :span="23">
           <el-form-item label="仓库状态" prop="status">
             <el-radio-group v-model="changeData.status" :disabled="dialogType=='create'?true:false">
               <el-radio label="1">启用</el-radio>
@@ -120,65 +147,39 @@ export default {
   name: 'Warehouse',
   data() {
     // - 验证门店是否存在
-    var checkPrincipal = (rule, value, callback) => {
-      console.log(value)
-      const result = this.shopList.filter(v => {
-        return v.id == value
-      })
-      if (!result.length) {
-        callback(new Error('该门店不存在'))
-      }
-      callback()
-    }
+    // var checkPrincipal = (rule, value, callback) => {
+    //   console.log(value)
+    //   const result = this.shopList.filter(v => {
+    //     return v.id == value
+    //   })
+    //   if (!result.length) {
+    //     callback(new Error('该门店不存在'))
+    //   }
+    //   callback()
+    // }
 
     return {
       tableData: [],
       shopList: [],
-      operatorList: [
-        {
-          label: '张三',
-          value: 1
-        },
-        {
-          label: '李四',
-          value: 2
-        },
-        {
-          label: '王五',
-          value: 3
-        }
-      ],
       changeData: {
-        status: '1'
+        status: '1',
+        is_default: '1'
       },
 
       // - 验证规则
       rules: {
         shop_id: [
-          {
-            required: true,
-            validator: checkPrincipal,
-            trigger: 'change'
-          }
+          { required: true, message: '请选择所属门店', trigger: 'change' }
         ],
         name: [
-          {
-            required: true,
-            message: '请输入仓库名称',
-            trigger: 'blur'
-          },
-          {
-            max: 15,
-            message: '最多输入 15 个字符',
-            trigger: 'blur'
-          }
+          { required: true, message: '请输入仓库名称', trigger: 'blur' },
+          { max: 15, message: '最多输入 15 个字符', trigger: 'blur' }
         ],
         status: [
-          {
-            required: true,
-            message: '请选择仓库状态',
-            trigger: 'change'
-          }
+          { required: true, message: '请选择仓库状态', trigger: 'change' }
+        ],
+        is_default: [
+          { required: true, message: '请选择是否默认仓库', trigger: 'change' }
         ]
       },
 
@@ -196,18 +197,17 @@ export default {
       flagTime: 0,
       listLoading: true,
       miniSize: 'mini',
-      smallSize: 'small',
       dialogWidth: '400px',
       formLabelWidth: '110px'
     }
   },
   created() {
     this.getList(this.listQuery)
-    this.getShop()
   },
   methods: {
     // - 弹框集中调用
     openDialog(type, data) {
+      this.getShop()
       if (type === 'create') {
         // console.log("create Dialog");
         this.dialogType = type
@@ -241,35 +241,30 @@ export default {
     handleDone(type) {
       if (type == 'create') {
         this.changeData.shop_name = this.changeData.shop_name * 1 // 变更数据类型
-        console.log(typeof this.changeData.shop_name, '1')
-        console.log(typeof this.changeData.warehouse_name, '2')
-        console.log(typeof this.changeData.status, '3')
-        console.log(this.changeData, 'req')
         // - request
         createWarehouse(this.changeData)
           .then(res => {
-            console.log('ok', res)
+            // console.log('ok', res)
             this.getList()
             this.dialogVisible = false
             this.resetForm('changeData')
           })
           .catch(res => {
-            console.log('err', res)
+            // console.log('err', res)
             this.$message.warning(res.message)
             return
           })
       } else {
         // - request
-        console.log(this.changeData.id)
         updateWarehouse(this.changeData, this.changeData.id)
           .then(res => {
-            console.log('ok', res)
+            // console.log('ok', res)
             this.getList()
             this.dialogVisible = false
             this.resetForm('changeData')
           })
           .catch(res => {
-            console.log('err', res)
+            // console.log('err', res)
             this.$message.warning(res.message)
             return
           })
@@ -278,7 +273,7 @@ export default {
 
     // - 删除
     deleteSubmit(id) {
-      console.log('Delete Submit')
+      // console.log('Delete Submit')
       this.$confirm('此操作将永久删除该数据, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -303,7 +298,8 @@ export default {
     resetForm(formName) {
       this.$refs[formName].resetFields()
       this.changeData = {
-        status: '1'
+        status: '1',
+        is_default: '1'
       }
     },
 
@@ -312,13 +308,6 @@ export default {
       this.dialogVisible = false
       this.resetForm('changeData')
       this.dialogType = ''
-    },
-
-    // - 回显
-    gradeBack(optionArr, index) {
-      let res
-      res = optionArr.filter(el => el.value == index)[0]
-      return res.label
     },
 
     // - 请求门店列表

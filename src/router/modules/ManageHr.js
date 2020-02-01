@@ -62,7 +62,7 @@ const Routers = {
       children: [{
         path: 'schedu-set',
         name: 'schedu-set',
-        component: () => import('@/view/ManageHr/SchedulingAttendance/index01'),
+        component: () => import('@/view/ManageHr/SchedulingAttendance/scheduSet'),
         meta: {
           title: '排班设置'
         }

@@ -1,10 +1,10 @@
 import request from '@/utils/request'
 const getList = {
-  get: (data) => {
+  get: (params) => {
     return request({
       url: '/v1/customer/index',
       method: 'get',
-      params:data
+      params
     }).then(res => {
       return res
     })

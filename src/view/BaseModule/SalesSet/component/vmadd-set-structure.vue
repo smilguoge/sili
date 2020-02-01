@@ -41,65 +41,72 @@
   </div>
 </template>
 <script>
-import { setStructureGet } from "@/api/BaseModule/SalesSet";
+import { setStructureGet } from '@/api/BaseModule/SalesSet'
 /**
  * FIXME: 该组件数据渲染不固定，会精确到门店或员工，用来适用于不同的组件。
  *
  * FIXME: 若有要添加新的需求请写好注释，以免误删！
  */
 export default {
-  name: "Structure2",
+  name: 'Structure2',
   props: {
     checkData: {
       type: Array
     },
     snycApplySetMeal: {},
-    snycVmaddSet: false
+    snycVmaddSet: false,
+    snycApplyPackageName: {
+      type: String,
+      default() {
+        return ''
+      }
+    }
   },
   data() {
     return {
       // 提交数据
-      filterText: "",
+      filterText: '',
       currentArr: [],
+      currenName: '',
       structureData: [],
       activeShow: true,
       selectedData: [],
       structureProps: {
-        children: "child",
-        label: "name"
+        children: 'child',
+        label: 'name'
       },
       listLoading: false
-    };
+    }
   },
   watch: {
     filterText(val) {
-      this.$refs.tree.filter(val);
+      this.$refs.tree.filter(val)
     },
     checkData(val) {
-      this.selectedData = val;
+      this.selectedData = val
       // console.log(this.selectedData);
     }
   },
   created() {
     // TODO: 请求组织结构数据
     // console.log(this.snycVmaddStruc)
-    this.getData();
+    this.getData()
   },
   methods: {
     getData() {
       // 获取数据
       setStructureGet().then(res => {
-        this.structureData = res.data;
+        this.structureData = res.data
         // console.log(res.data)
-      });
+      })
     },
     triggerto(data) {
       // this.$refs.tree.setCheckedKeys([]);
     },
     filterNode(value, data) {
       // - 筛选
-      if (!value) return true;
-      return data.name.indexOf(value) !== -1;
+      if (!value) return true
+      return data.name.indexOf(value) !== -1
     },
     nodeClick(data) {
       // - 获取被点击数据（并不是选中复选框）
@@ -111,73 +118,87 @@ export default {
     },
 
     // - FIXME: 权限配置功能/门店配置功能
-    addCheck(type = "auth") {
-      const checkArr = this.$refs.tree.getCheckedNodes();
-      const resArr = [];
-      this.currentArr = [];
+    addCheck(type = 'auth') {
+      const checkArr = this.$refs.tree.getCheckedNodes()
+      const resArr = []
+      const resArrName = []
+      this.currentArr = []
       checkArr.forEach(item => {
         if (item.child.length == 0) {
-          resArr.push(item.id);
+          resArr.push(item.id)
           // console.log(resArr);
+          resArrName.push(item.name)
         }
-        return resArr;
-      });
-      this.currentArr = resArr;
+        return resArr, resArrName
+      })
+      this.currentArr = resArr
+      this.currenName = resArrName
+      // console.log(this.currenName);
+    },
+    // 选择中
+    setdatainit(data) {
+      console.log(data)
+      if (data.length > 0) {
+        this.$refs.tree.setCheckedKeys(data)
+      }
     },
     // 处理全选
     checkAll() {
-      this.flag = true;
-      this.$refs.tree.setCheckedNodes(this.structureData);
+      this.flag = true
+      this.$refs.tree.setCheckedNodes(this.structureData)
     },
     // 全选处理方法
     batchSelect(nodes, refs, flag, seleteds) {
-      if (typeof nodes !== "undefined") {
+      if (typeof nodes !== 'undefined') {
         nodes.forEach(element => {
-          refs.setChecked(element, flag, true);
-        });
+          refs.setChecked(element, flag, true)
+        })
       }
-      if (typeof seleteds !== "undefined") {
+      if (typeof seleteds !== 'undefined') {
         seleteds.forEach(node => {
-          refs.setChecked(node, !flag, true);
-        });
+          refs.setChecked(node, !flag, true)
+        })
       }
     },
     // 反选
     inverse() {
-      const res = this.$refs.tree;
-      const nodes = res.getCheckedNodes(true, true);
-      this.batchSelect(this.structureData, res, true, nodes);
+      const res = this.$refs.tree
+      const nodes = res.getCheckedNodes(true, true)
+      this.batchSelect(this.structureData, res, true, nodes)
     },
     // 关闭
     AddStore() {
-      this.$emit("update:snycVmaddSet", false);
-      this.$refs.tree.setCheckedKeys([]);
+      this.$emit('update:snycVmaddSet', false)
+      this.$refs.tree.setCheckedKeys([])
     },
     // 提交
     AddStorepost() {
       // 已选数据
-      this.addCheck();
+      this.addCheck()
       if (this.currentArr.length <= 0) {
         this.$message({
-          message: "请选择",
-          type: "warning"
-        });
-        return false;
+          message: '请选择',
+          type: 'warning'
+        })
+        return false
       }
+      const data_name = String(this.currenName)
       const set_data = {
         goods_type: 3,
         is_using: 0,
         goods_id: this.currentArr
-      };
+      }
       //  console.log(set_data)
-      this.$emit("update:snycApplySetMeal", set_data);
-      this.AddStore();
+      this.$emit('update:snycApplySetMeal', set_data)
+      this.$emit('update:snycApplyPackageName', data_name)
+
+      this.AddStore()
     },
     handleClosep(done) {
-      this.AddStore();
+      this.AddStore()
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>

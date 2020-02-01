@@ -70,3 +70,23 @@ export class authGroupDetail {
     })
   }
 }
+
+// FIXME: 流程明细模块
+export class approvalDetail {
+  list() {
+    return request({
+      url: '/v1/approve-record/list',
+      method: 'get'
+    })
+  }
+}
+
+// FIXME: 盘点 盈亏惩处审批流程模块
+export class approvalRecordDetail {
+  index(id) {
+    return request({
+      url: 'v1/approve-record-dtl/index?record_id=' + id,
+      method: 'get'
+    })
+  }
+}

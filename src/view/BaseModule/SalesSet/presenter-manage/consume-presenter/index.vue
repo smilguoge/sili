@@ -66,6 +66,7 @@
                 >编辑</el-button>
                 <el-button
                   size="mini"
+                  type="danger"
                   @click="openDialog('childrenDelete',scope.row, scope.$index, props.$index)"
                 >删除</el-button>
               </template>
@@ -77,7 +78,12 @@
         <!-- 父级表头 -->
         <template slot="header">
           <span>赠送明细</span>
-          <el-button style="float:right;" size="mini" @click="openDialog('create')">新增</el-button>
+          <el-button
+            style="float:right;"
+            size="mini"
+            type="primary"
+            @click="openDialog('create')"
+          >新增</el-button>
         </template>
         <!-- 父级数据 -->
         <template slot-scope="scope">
@@ -87,10 +93,14 @@
           {{scope.row.is_assign_consume==1?'嘉宾消费护理项目'+scope.row.goods_json+',':''}}
           {{scope.row.is_add_price == 1?'加价'+scope.row.add_price+'元':''}}
           <div style="display:inline-block;float:right">
-            <el-button size="mini" @click="openDialog('childrenCreate', {}, scope.$index)">添加明细</el-button>
             <el-button
               size="mini"
-              type="danger"
+              type="primary"
+              @click="openDialog('childrenCreate', {}, scope.$index)"
+            >添加明细</el-button>
+            <el-button
+              size="mini"
+              type="primary"
               @click="openDialog('edit', scope.row, scope.$index)"
             >编辑</el-button>
             <el-button
@@ -229,18 +239,6 @@ export default {
         default:
           break;
       }
-    },
-    formatClass(data) {
-      for (let i = 0; i < data.length; i++) {
-        if (data[i] == 1) return "普通";
-        if (data[i] == 2) return "尊享卡";
-      }
-    },
-    formatStar(data) {
-      for (let i = 0; i < data.length; i++) {
-        if (data[i] == 1) return "普通";
-        if (data[i] == 2) return "一星";
-      }
     }
   },
   watch: {
@@ -263,14 +261,34 @@ export default {
     echoConsumeData(val) {
       if (val && val.length > 0) {
         for (let i = 0; i < val.length; i++) {
-          val[i].sale_start_at = val[i].sale_start_at.length <= 10 ? val[i].sale_start_at * 1000 : val[i].sale_start_at;
-          val[i].sale_end_at = val[i].sale_end_at.length <= 10 ? val[i].sale_end_at * 1000 : val[i].sale_end_at;
+          val[i].sale_start_at =
+            val[i].sale_start_at.length <= 10
+              ? val[i].sale_start_at * 1000
+              : val[i].sale_start_at;
+          val[i].sale_end_at =
+            val[i].sale_end_at.length <= 10
+              ? val[i].sale_end_at * 1000
+              : val[i].sale_end_at;
           if (val[i].senddtl && val[i].senddtl.length > 0) {
-            for(let j = 0; j < val[i].senddtl.length; j++) {
-              val[i].senddtl[j].validity_start_at = val[i].senddtl[j].validity_start_at.length <= 10 ? val[i].senddtl[j].validity_start_at * 1000 : val[i].senddtl[j].validity_start_at;
-              val[i].senddtl[j].validity_end_at = val[i].senddtl[j].validity_end_at.length <= 10 ? val[i].senddtl[j].validity_end_at * 1000 : val[i].senddtl[j].validity_end_at;
-              val[i].senddtl[j].dic_customer_grade = val[i].senddtl[j].dic_customer_grade.split(',').map(Number);
-              val[i].senddtl[j].dic_customer_star = val[i].senddtl[j].dic_customer_star.split(',').map(Number)
+            for (let j = 0; j < val[i].senddtl.length; j++) {
+              val[i].senddtl[j].validity_start_at =
+                val[i].senddtl[j].validity_start_at.length <= 10
+                  ? val[i].senddtl[j].validity_start_at * 1000
+                  : val[i].senddtl[j].validity_start_at;
+              val[i].senddtl[j].validity_end_at =
+                val[i].senddtl[j].validity_end_at.length <= 10
+                  ? val[i].senddtl[j].validity_end_at * 1000
+                  : val[i].senddtl[j].validity_end_at;
+              val[i].senddtl[j].dic_customer_grade = val[i].senddtl[
+                j
+              ].dic_customer_grade
+                .split(",")
+                .map(Number);
+              val[i].senddtl[j].dic_customer_star = val[i].senddtl[
+                j
+              ].dic_customer_star
+                .split(",")
+                .map(Number);
             }
           }
         }
@@ -299,7 +317,7 @@ export default {
     // - 回显
     gradeBack(optionArr, dicArr) {
       const getData = optionArr.filter(item => dicArr.includes(item.value));
-      return getData.map(item => item.label).join(',')
+      return getData.map(item => item.label).join(",");
     },
 
     // 弹框集中处理
@@ -339,25 +357,6 @@ export default {
         default:
           break;
       }
-    },
-
-    load(tree, treeNode, resolve) {
-      setTimeout(() => {
-        resolve([
-          {
-            id: 31,
-            date: "2016-05-01",
-            name: "王小虎",
-            address: "上海市普陀区金沙江路 1519 弄"
-          },
-          {
-            id: 32,
-            date: "2016-05-01",
-            name: "王小虎",
-            address: "上海市普陀区金沙江路 1519 弄"
-          }
-        ]);
-      }, 1000);
     },
 
     // 关闭弹窗
@@ -423,7 +422,10 @@ export default {
         .then(() => {
           this.tableList.splice(index, 1);
           this.$message.success("删除成功!");
-          this.$emit("on-consumeList", JSON.parse(JSON.stringify(this.tableList)));
+          this.$emit(
+            "on-consumeList",
+            JSON.parse(JSON.stringify(this.tableList))
+          );
         })
         .catch(() => {});
     },
@@ -446,7 +448,10 @@ export default {
               }
             }
           }
-          this.$emit("on-consumeList", JSON.parse(JSON.stringify(this.tableList)));
+          this.$emit(
+            "on-consumeList",
+            JSON.parse(JSON.stringify(this.tableList))
+          );
         })
         .catch(() => {});
     }

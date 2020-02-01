@@ -102,7 +102,7 @@ export default {
       const resArr = []
       this.currentArr = []
       checkArr.forEach(item => {
-        if (item.child.length <= 0) {
+        if (item.child && item.child.length <= 0) {
           resArr.push(item.id)
         }
         return resArr

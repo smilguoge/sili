@@ -1,4 +1,5 @@
 <template>
+  <!-- 班次管理 -->
   <div class="Shifts-body">
     <div class="Shifts-top">
       <div class="Shifts-top-left">
@@ -50,7 +51,7 @@
           <el-table-column label="操作" width="150" align="center">
             <template slot-scope="scope">
               <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">修改</el-button>
-              <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+              <el-button size="mini" type="danger" :disabled="Object.keys(scope.row).length<3?true:false" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -104,6 +105,7 @@ export default {
       })
       ShiftsGet(this.dataId).then(res => {
         this.dataArr = res.data.list
+        // console.log(this.dataArr)
       })
     },
     // 数据引入
@@ -157,11 +159,12 @@ export default {
             message: '删除成功',
             type: 'success'
           })
-          this.dataArr.forEach((item, index) => {
-            if (item.id === row.id) {
-              this.dataArr.splice(index, 1)
-            }
-          })
+          this.querydata()
+          // this.dataArr.forEach((item, index) => {
+          //   if (item.id === row.id) {
+          //     this.dataArr.splice(index, 1)
+          //   }
+          // })
         } else {
           this.$message({
             message: '删除失败',

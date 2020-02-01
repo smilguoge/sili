@@ -1,11 +1,10 @@
 <template>
   <!-- 活动套餐设置 -->
-  <el-container class="m-container">
-
-    <div class="m-filter">
+  <div class="m-container app-container activity-set">
+    <div class=" filter-container m-filter">
       <el-form ref="filterForm" :model="listQuery" :inline="true" class="search-form">
         <el-form-item prop="title">
-          <el-input v-model="listQuery.title" clearable placeholder="请输入活动名称" style="width:140px;" class="filter-item" @keyup.enter.native="handleFilter" />
+          <el-input v-model="listQuery.title" clearable placeholder="请输入活动名称" style="width:150px;" class="filter-item" @keyup.enter.native="handleFilter" />
         </el-form-item>
         <el-form-item prop="status">
           <el-select v-model="listQuery.status" clearable style="width:120px;" placeholder="请选择状态" class="filter-item">
@@ -25,16 +24,16 @@
         </el-form-item>
         <el-form-item>
           <el-button class="filter-item" type="primary" @click="handleFilter">查 询</el-button>
-          <el-button @click="resetFilter('filterForm')">重 置</el-button>
+          <el-button class="filter-item" @click="resetFilter('filterForm')">重 置</el-button>
         </el-form-item>
       </el-form>
-      <el-button type="primary" @click="handleCreate()">新 建</el-button>
-      <el-button type="primary" @click="handleCreate()">导 出</el-button>
-      <el-button type="primary" @click="handleCreate()">导 入</el-button>
+      <el-button class="filter-item" type="primary" @click="handleCreate">新 建</el-button>
+      <el-button class="filter-item" type="primary">导 出</el-button>
+      <el-button class="filter-item" type="primary">导 入</el-button>
     </div>
 
-    <el-header class="m-header">
-      <el-row>
+    <!-- <el-header class="m-header">
+    <el-row>
         <el-col :span="20">
           <el-button type="primary" icon="el-icon-plus" @click="handleCreate()">新建</el-button>
           <exportexcel
@@ -44,11 +43,11 @@
           />
           <el-button type="primary" icon="el-icon-upload2" @click="importExcel()">导入</el-button>
         </el-col>
-      </el-row>
-    </el-header>
+      </el-row> -->
+    <!-- </el-header> -->
 
     <div
-      :style="{width: drawerFlag ? '30%' : '100%'}"
+      :style="{width: drawerFlag ? 'calc(100% - 1040px)' : '100%'}"
       class="m-content"
     >
       <div class="m-table">
@@ -56,212 +55,306 @@
           ref="singleTable"
           v-loading="listLoading"
           :data="list"
-          border
           fit
           highlight-current-row
           width="100%"
           height="100%"
         >
-          <el-table-column label="活动名称" width="150">
-            <template slot-scope="scope">{{ scope.row.activename }}</template>
-          </el-table-column>
-
-          <el-table-column label="促销活动" width="150">
-            <template slot-scope="scope">{{ scope.row.salesname }}</template>
-          </el-table-column>
-
-          <el-table-column label="活动文件号" width="150" align="center">
-            <template slot-scope="scope">
-              {{ scope.row.activeid }}
+          <el-table-column label="活动名称" align="center" min-width="150">
+            <template slot-scope="{row}">
+              <span>{{ row.name }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column label="活动编码" width="150" align="center">
-            <template slot-scope="scope">{{ scope.row.activecode }}</template>
-          </el-table-column>
-
-          <el-table-column align="center" label="赠送积分" width="100">
-            <template slot-scope="scope">
-              <span>{{ scope.row.jifen }}</span>
+          <el-table-column label="促销活动" align="center" min-width="150">
+            <template slot-scope="{row}">
+              <span>{{ row.promotion }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column align="center" label="是否折上折" width="100">
-            <template slot-scope="scope">
-              <span>{{ scope.row.discount }}</span>
+          <el-table-column label="活动文件号" align="center" min-width="130">
+            <template slot-scope="{row}">
+              <span>{{ row.filecode }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column align="center" label="状态" width="100">
-
-            <template slot-scope="scope">
-              <span v-if="scope.row.status % 2 == 0">
-                <el-tag type="success">正常</el-tag>
-              </span>
-              <span v-else>
-                <el-tag type="danger">过期</el-tag>
-              </span>
+          <el-table-column label="活动编码" align="center" min-width="140">
+            <template slot-scope="{row}">
+              <span>{{ row.code }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column align="center" label="是否顾客属性" width="120">
-            <template slot-scope="scope">
-              <span>{{ scope.row.property }}</span>
+          <el-table-column label="赠送积分" align="center">
+            <template slot-scope="{row}">
+              <span>{{ row.send_integral }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column align="center" label="开始日期" width="120">
-            <template slot-scope="scope">
-              <span>{{ scope.row.startdate | parseTime('{y}-{m}-{d}') }}</span>
+          <el-table-column label="是否折上折" align="center" min-width="90">
+            <template slot-scope="{row}">
+              <span>{{ row.is_more_discount?'是':'否' }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column align="center" label="结束日期" width="120">
-            <template slot-scope="scope">
-              <span>{{ scope.row.endate | parseTime('{y}-{m}-{d}') }}</span>
+          <el-table-column label="状态" align="center">
+            <template slot-scope="{row}">
+              <el-tag :type="row.is_expire?'danger':'success'">{{ row.is_expire?'过期':'正常' }}</el-tag>
             </template>
           </el-table-column>
 
-          <el-table-column align="center" label="适用门店" width="160">
-            <template slot-scope="scope">
-              <span>{{ scope.row.storename }}</span>
+          <el-table-column label="适用顾客属性" align="center" min-width="116">
+            <template slot-scope="{row}">
+              <span>{{ row.customer_attr }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column align="center" label="操作人" width="100">
-            <template slot-scope="scope">
-              <span>{{ scope.row.username }}</span>
+          <el-table-column label="开始日期" align="center" min-width="100">
+            <template slot-scope="{row}">
+              <span>{{ handleTime(row.start_at) | parseTime('{y}-{m}-{d}') }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column align="center" label="操作时间" width="160">
-            <template slot-scope="scope">
-              <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <el-table-column label="结束日期" align="center" min-width="100">
+            <template slot-scope="{row}">
+              <span>{{ handleTime(row.end_at) | parseTime('{y}-{m}-{d}') }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column align="center" fixed="right" label="操作" width="150">
-            <template slot-scope="scope">
-              <el-button type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-              <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+          <el-table-column label="适用门店" align="center">
+            <template slot-scope="{row}">
+              <span>{{ row.chose_shop?'全部':'指定' }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="操作人" align="center" min-width="90">
+            <template slot-scope="{row}">
+              <span>{{ row.operator }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="操作时间" align="center" min-width="140">
+            <template slot-scope="{row}">
+              <span>{{ handleTime(row.updated_at) | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column label="操作" align="center" fixed="right" width="150">
+            <template slot-scope="{row}">
+              <el-button type="primary" size="small" @click="handleEdit(row.id)">编辑</el-button>
+              <el-button type="danger" size="small" @click="handleDelete(row.id)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
       </div>
 
-      <div class="m-footer">
-        <el-pagination v-show="total>0" :current-page="listQuery.page" :page-sizes="[10,20,30]" :page-size="listQuery.rows" :total="total" background layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <div v-show="total>0" class="m-footer">
+        <el-pagination :current-page="listQuery.page" :page-sizes="[10,20,30]" :page-size="listQuery.page_size" :total="total" background layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
       </div>
     </div>
 
     <!-- right -->
     <drawerBox
-      :style="{right: drawerFlag ? '0' : '-70%'}"
+      ref="drawerBox"
+      v-model="baseData"
+      :option-promotion="arrPromotion"
+      :option-discount="arrDiscount"
+      :option-card="arrCard"
+      :type="drawerType"
+      :style="{right: drawerFlag ? '0' : '-1040px'}"
       class="m-drawer"
+      @create="handleSave($event)"
+      @update="handleUpdate($event)"
       @close="closeDrawer"
     />
 
-  </el-container>
+  </div>
 </template>
 
 <script>
-// import { fetchList } from '@/api/demo/article'
-import exportexcel from '@/component/ExportExcel/index'
+import { ActivityBase } from '@/api/BaseModule/SalesSet'
+const baseApi = new ActivityBase()
+// import exportexcel from '@/component/ExportExcel/index'
 import drawerBox from './activity-set/drawer-box'
-
-const list = []
-for (var i = 0; i < 2; i++) {
-  list.push({
-    activename: '活动名称' + i,
-    salesname: '促销活动' + i,
-    activeid: '活动文件号' + i,
-    activecode: '活动编码' + i,
-    jifen: '10',
-    youhui: '',
-    discount: '是',
-    property: '售前售后',
-    status: i,
-    userstype: '售后',
-    startdate: '20190101',
-    endate: '20190102',
-    storename: '门店' + i,
-    username: '用户' + i,
-    timestamp: '2019-11-11'
-  })
-}
 
 export default {
   name: 'ActivityTable',
   components: {
-    exportexcel,
+    // exportexcel,
     drawerBox
   },
   data() {
     return {
       listLoading: false,
       list: null,
+      baseData: {},
       total: null,
       listQuery: {
         page: 1,
-        rows: 20,
+        page_size: 20,
         title: '',
         status: '',
         date: ''
       },
+      drawerType: '',
+      arrPromotion: [],
+      arrDiscount: [],
+      arrCard: [],
       stautsOptions: [{ name: '过期', value: 0 }, { name: '正常', value: 1 }],
-      drawerFlag: false,
-      title: ['项目类别', '项目编号', '项目名称', '销售价格', '状态', '操作人', '操作时间'],
-      datakey: ['itemid', 'itemid', 'unit', 'price', 'status', 'username', 'timestamp']
+
+      // FIXME: 导出(待定)
+      // title: ['项目类别', '项目编号', '项目名称', '销售价格', '状态', '操作人', '操作时间'],
+      // datakey: ['itemid', 'itemid', 'unit', 'price', 'status', 'username', 'timestamp'],
+
+      drawerFlag: false
     }
   },
   created() {
-    this.getList()
+    this.getList(this.listQuery)
   },
   methods: {
-    getList() {
+    getList(params) {
       this.listLoading = true
-      setTimeout(() => {
-        this.list = list
-        this.total = list.length
-        this.listLoading = false
-      }, 1000)
+      baseApi.list(params)
+        .then(res => {
+          const item = res.data
+          this.list = item.arrLog
+          this.total = parseInt(item.totalnum)
+          this.listLoading = false
+        })
+        .catch(res => {
+          console.log(res)
+          this.listLoading = false
+        })
     },
     handleFilter() {
-      this.getList()
+      // this.getList(this.listQuery)
+      this.$message.warning('功能正在开发')
     },
     resetFilter(formName) {
       this.$refs[formName].resetFields()
     },
-    handleSizeChange(val) {
-      this.listQuery.rows = val
-      this.getList()
-    },
-    handleCurrentChange(val) {
-      this.listQuery.page = val
-      this.getList()
-    },
     handleCreate() {
       // 新增
-      this.drawerFlag = true
+      this.listLoading = true
+      baseApi.gcreate()
+        .then(res => {
+          const item = res.data
+          this.arrPromotion = item.arrPromotion
+          this.arrDiscount = item.arrDiscount
+          this.arrCard = item.arrCard
+          this.drawerType = 'create'
+          this.listLoading = false
+          this.drawerFlag = true
+        })
     },
-    handleEdit(row) {
-      // console.info(row)
+    handleEdit(id) {
       // 编辑
-      this.drawerFlag = true
+      if (this.drawerFlag) {
+        this.$message.warning('请关闭当前编辑页再进行操作')
+        return
+      }
+      this.listLoading = true
+      baseApi.gupdate({ id: id })
+        .then(res => {
+          this.$refs.drawerBox.setId(id)
+          const item = res.data
+          this.drawerType = 'edit'
+          this.arrPromotion = item.arrPromotion
+          this.arrDiscount = item.arrDiscount
+          this.arrCard = item.arrCard
+          this.baseData = item
+          this.baseData.start_time = item.start_at * 1000
+          this.baseData.end_time = item.end_at * 1000
+          this.drawerFlag = true
+          this.listLoading = false
+        })
+        .catch(res => {
+          this.$message.warning('数据请求失败')
+          this.listLoading = false
+        })
     },
-    handleDelete(row) {
+    handleDelete(id) {
+      if (this.drawerFlag) {
+        this.$message.warning('请先关闭详情视图再进行操作')
+        return
+      }
+      // TODO: 判断是否可以删除
       this.$confirm('是否确认删除?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        this.$message({
-          type: 'success',
-          message: '删除成功!'
-        })
-      }).catch(() => {
-
       })
+        .then(() => {
+          // request
+          baseApi.delete(id)
+            .then(res => {
+              console.log(res)
+              this.$message.success('删除成功!')
+            })
+            .catch(res => {
+              console.log(res)
+            })
+        })
+        .catch(() => {})
+    },
+    handleSave(data) {
+      // 新建提交
+      console.log('create', data)
+      switch (data.type) {
+        case 'base':
+          // 基础信息提交
+          baseApi.create(data.data)
+            .then(res => {
+              console.log('新建', res)
+              this.getList(this.listQuery)
+              this.$refs['drawerBox'].cardPackage(res.data.id) // 传新建基础信息返回活动套餐主表id
+              // this.$refs['drawerBox'].formactive = 'second'
+            })
+            .catch(res => {
+              console.log('新建 ERR', res)
+            })
+          break
+        default :
+          console.log('参数错误')
+          break
+      }
+    },
+    handleUpdate(data) {
+      // 修改提交
+      console.log('update', data)
+      switch (data.type) {
+        case 'base':
+          // 基础信息提交
+          baseApi.update(data.params)
+            .then(res => {
+              console.log('更新', res)
+              this.getList(this.listQuery)
+              this.$refs['drawerBox'].formactive = 'second'
+            })
+            .catch(res => {
+              console.log('更新 ERR', res)
+            })
+          break
+        default :
+          console.log('参数错误')
+          break
+      }
+    },
+    handleSizeChange(val) {
+      this.listQuery.page_size = val
+      this.getList(this.listQuery)
+    },
+    handleCurrentChange(val) {
+      this.listQuery.page = val
+      this.getList(this.listQuery)
+    },
+    handleTime(val) {
+      // 处理时间戳
+      if ((val + '').length < 13) {
+        return parseInt(val * 1000)
+      } else {
+        return parseInt(val)
+      }
     },
     importExcel() {
       // 导入
@@ -273,7 +366,14 @@ export default {
   }
 }
 </script>
-
+<style>
+  .new-float-left {
+    width:48%;
+    float: left;
+    margin-right: 1%;
+    display: block
+  }
+</style>
 <style lang='css' scoped>
 .line {
   text-align: center;
@@ -284,19 +384,16 @@ export default {
   overflow: hidden;
 }
 .m-filter {
-  padding: 12px 20px 11px;
-  border-bottom: 1px solid #ebeef5;
+  overflow: hidden;
 }
-.m-filter .el-form-item{margin-bottom:0}
-.m-header {
-  line-height: 60px;
+.m-filter .el-form-item {
+  margin-bottom:0
 }
 .m-footer {
   padding: 20px 0;
 }
 .m-content {
   width: 100%;
-  padding: 0 20px;
   flex: 1;
   transition: 0.5s;
   -webkit-transition: 0.5s;
@@ -310,7 +407,8 @@ export default {
   right: 0;
   top: 0;
   z-index: 1;
-  width: 70%;
+  /* width: 70%; */
+  width: 1040px;
   height: 100%;
   overflow-y: scroll;
   background-color: #fff;

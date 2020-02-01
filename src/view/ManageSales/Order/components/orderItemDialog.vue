@@ -1,7 +1,7 @@
 <template>
   <!-- 积分兑换 -->
   <el-dialog
-    :title="dialogType==='dis'?'赠送项目':'正常项目'"
+    :title="dialogType==='puTong'?'正常项目':'赠送项目'"
     :visible.sync="dialogVisible"
     :before-close="handleCancel"
     :close-on-click-modal="false"
@@ -9,47 +9,46 @@
     :append-to-body="true"
     class="order-item-dialog"
     width="600px"
+    @open="onOpenOrderItemDialog"
   >
     <el-col :span="22" :offset="1">
       <div class="filter-container">
-        <el-radio-group v-model="state">
-          <el-radio label="1" class="filter-item">组合一</el-radio>
-          <el-radio label="2" class="filter-item">组合二</el-radio>
-          <el-radio label="3" class="filter-item">组合三</el-radio>
+        <el-radio-group v-model="groupId">
+          <el-radio v-for="(item,index) in groupList" :key="index" :label="item.id" class="filter-item">{{ item.name }}</el-radio>
         </el-radio-group>
       </div>
     </el-col>
     <el-col :span="22" :offset="1">
       <div class="discount-table">
-        <el-table v-model="itemList" style="width:100%" height="300px" fit>
-          <el-table-column prop="类别" align="center">
+        <el-table :data="itemList" style="width:100%" height="300px" fit>
+          <el-table-column label="类别" align="center">
             <template slot-scope="{row}">
-              <span>{{ row.name }}</span>
+              <span>{{ row.gtype_name }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="名称" align="center">
+          <el-table-column label="名称" align="center">
             <template slot-scope="{row}">
-              <span>{{ row.name }}</span>
+              <span>{{ row.goods_name }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="规格" align="center">
+          <el-table-column label="规格" align="center">
             <template slot-scope="{row}">
-              <span>{{ row.name }}</span>
+              <span>{{ row.specs }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="原价" align="center">
+          <el-table-column label="原价" align="center">
             <template slot-scope="{row}">
-              <span>{{ row.name }}</span>
+              <span>{{ row.price }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="数量" align="center">
+          <el-table-column label="数量" align="center">
             <template slot-scope="{row}">
-              <span>{{ row.name }}</span>
+              <el-input v-model="row.buyNum" type="number" placeholder="数量" />
             </template>
           </el-table-column>
-          <el-table-column prop="操作" align="center">
+          <el-table-column label="操作" align="center">
             <template slot-scope="{row}">
-              <el-button type="primary" size="mini">添 加</el-button>
+              <el-button type="primary" size="mini" @click="onAddGoods(row)">添 加</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -59,18 +58,20 @@
       slot="footer"
       class="dialog-footer"
     >
-      <el-col :span="23">
+      <!--<el-col :span="23">
         <el-button @click="handleCancel">取 消</el-button>
         <el-button
           type="primary"
-          @click="handleCancel"
+          @click="onSubmit"
         >确 定</el-button>
-      </el-col>
+      </el-col>-->
       <div style="clear:both" />
     </div>
   </el-dialog>
 </template>
 <script>
+import { saleCardPackageList } from '@/api/ManageSales/Order'
+
 export default {
   name: '',
   props: {
@@ -80,38 +81,81 @@ export default {
         return false
       }
     },
-    type: {
+    dialogType: {
       type: String,
       default() {
         return ''
+      }
+    },
+    saleCardPackageListPar: {
+      type: Object,
+      default() {
+        return {}
       }
     }
   },
   data() {
     return {
       // -
-      itemList: [],
-      dialogType: '',
-      state: '1',
-      dialogVisible: false,
-      flagTime: 0
+      groupId: 0,
+      groupList: [],
+      dialogVisible: false
+    }
+  },
+  computed: {
+    itemList() {
+      for (var i = 0, len = this.groupList.length; i < len; i++) {
+        if (this.groupList[i]['id'] == this.groupId) {
+          return this.groupList[i]['cardPcomDtl']
+        }
+      }
+      return []
     }
   },
   watch: {
     value(val) {
       this.dialogVisible = val
-    },
-    type(val) {
-      this.dialogType = val
     }
   },
   created() {
     // -
   },
   methods: {
+    onOpenOrderItemDialog() {
+      var saleCardPackageListPar = this.saleCardPackageListPar
+      saleCardPackageList({
+        id: saleCardPackageListPar.id,
+        pcom_type: saleCardPackageListPar.pcom_type,
+        combination_id: saleCardPackageListPar.combination_id
+      }).then(res => {
+        this.groupList = res.data.list
+      })
+    },
     handleCancel() {
-      // this.$parent.integralVisible = false
-      this.$emit('cancel')
+      this.$emit('cancel', this.dialogType)
+    },
+    onSubmit() {
+      this.$emit('submit', this.dialogType)
+      this.handleCancel()
+    },
+    onAddGoods(goods) {
+      if (!(goods.buyNum > 0)) {
+        this.$message({
+          message: '请输入数量',
+          type: 'warning'
+        })
+        return
+      }
+
+      var this_ = this
+      this.$emit('onAddGoods', goods, function(error, msg) {
+        if (error) {
+          this_.$message({
+            message: msg,
+            type: 'warning'
+          })
+        }
+      })
     }
   }
 }

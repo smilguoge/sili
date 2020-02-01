@@ -14,11 +14,11 @@
     <div class="deduction-total-bar">
       <el-col :span="11" :offset="1">
         <span class="tit-font">券累计使用金额：</span>
-        <span class="num info-color">{{ deductionData.name1 }}</span>
+        <span class="num info-color">{{ coupon }}</span>
       </el-col>
       <el-col :span="11">
         <span class="tit-font">老卡累计使用金额：</span>
-        <span class="num info-color">{{ deductionData.name1 }}</span>
+        <span class="num info-color">{{ exchange }}</span>
       </el-col>
     </div>
     <el-col :span="22" :offset="1">
@@ -27,10 +27,11 @@
           <span class="tit-font">代金券</span>
         </div>
         <el-table
-          :data="deductionData.table1"
+          :data="customer_coupon_lists"
           height="240px"
           class="item-table"
           fit
+          @selection-change="handleSelectionChange"
         >
           <el-table-column
             type="selection"
@@ -43,7 +44,7 @@
             fixed="left"
           >
             <template slot-scope="{row}">
-              {{ row.name1 }}
+              {{ row.coupon.name }}
             </template>
           </el-table-column>
           <el-table-column
@@ -51,7 +52,7 @@
             label="券编码"
           >
             <template slot-scope="{row}">
-              {{ row.name2 }}
+              {{ row.coupon.code }}
             </template>
           </el-table-column>
           <el-table-column
@@ -59,7 +60,7 @@
             label="券来源"
           >
             <template slot-scope="{row}">
-              {{ row.name3 }}
+              {{ row.coupon.type === '1' ? '礼券' : '活动赠送' }}
             </template>
           </el-table-column>
           <el-table-column
@@ -67,7 +68,7 @@
             label="失效日期"
           >
             <template slot-scope="{row}">
-              {{ row.name4 }}
+              {{ row.effective | parseTime('{y}-{m}-{d}') }}
             </template>
           </el-table-column>
           <el-table-column
@@ -75,7 +76,7 @@
             label="面额"
           >
             <template slot-scope="{row}">
-              {{ row.name5 }}
+              {{ row.amount }}
             </template>
           </el-table-column>
           <el-table-column
@@ -83,7 +84,7 @@
             label="剩余金额"
           >
             <template slot-scope="{row}">
-              {{ row.name6 }}
+              {{ row.money }}
             </template>
           </el-table-column>
           <el-table-column
@@ -91,7 +92,7 @@
             label="使用金额"
           >
             <template slot-scope="{row}">
-              {{ row.name7 }}
+              <el-input v-model="row.use_amount" type="number" placeholder="使用金额" @input="handleCoupon(row)" />
             </template>
           </el-table-column>
           <el-table-column
@@ -99,7 +100,7 @@
             label="券种类"
           >
             <template slot-scope="{row}">
-              {{ row.name8 }}
+              {{ row.coupon.dic_coupon_class }}
             </template>
           </el-table-column>
           <el-table-column
@@ -107,7 +108,7 @@
             label="发放人"
           >
             <template slot-scope="{row}">
-              {{ row.name9 }}
+              {{ row.operator }}
             </template>
           </el-table-column>
           <el-table-column
@@ -115,7 +116,7 @@
             label="发放日期"
           >
             <template slot-scope="{row}">
-              {{ row.name10 | parseTime('{y}-{m}-{d}') }}
+              {{ row.created_at | parseTime('{y}-{m}-{d}') }}
             </template>
           </el-table-column>
         </el-table>
@@ -127,10 +128,11 @@
           <span class="tit-font">兑换</span>
         </div>
         <el-table
-          :data="deductionData.table2"
+          :data="sale_card_packagedtl_lists"
           height="240px"
           class="item-table"
           fit
+          @selection-change="handleSelectionExchange"
         >
           <el-table-column
             type="selection"
@@ -143,7 +145,7 @@
             fixed="left"
           >
             <template slot-scope="{row}">
-              {{ row.name1 }}
+              {{ row.project_code }}
             </template>
           </el-table-column>
           <el-table-column
@@ -151,7 +153,7 @@
             label="品项名称"
           >
             <template slot-scope="{row}">
-              {{ row.name2 }}
+              {{ row.project_name }}
             </template>
           </el-table-column>
           <el-table-column
@@ -159,7 +161,7 @@
             label="套餐名称"
           >
             <template slot-scope="{row}">
-              {{ row.name3 }}
+              {{ row.saleCardPackage.name }}
             </template>
           </el-table-column>
           <el-table-column
@@ -167,7 +169,7 @@
             label="总金额"
           >
             <template slot-scope="{row}">
-              {{ row.name4 }}
+              {{ row.actual_subtotal }}
             </template>
           </el-table-column>
           <el-table-column
@@ -175,7 +177,7 @@
             label="单财"
           >
             <template slot-scope="{row}">
-              {{ row.name5 }}
+              {{ row.expend_price }}
             </template>
           </el-table-column>
           <el-table-column
@@ -183,7 +185,7 @@
             label="调整金额"
           >
             <template slot-scope="{row}">
-              {{ row.name6 }}
+              {{ row.adjust_price }}
             </template>
           </el-table-column>
           <el-table-column
@@ -191,7 +193,7 @@
             label="购买次数"
           >
             <template slot-scope="{row}">
-              {{ row.name7 }}
+              {{ row.quantity }}
             </template>
           </el-table-column>
           <el-table-column
@@ -199,7 +201,7 @@
             label="剩余次数"
           >
             <template slot-scope="{row}">
-              {{ row.name8 }}
+              {{ row.surplus_quantity }}
             </template>
           </el-table-column>
           <el-table-column
@@ -207,7 +209,7 @@
             label="兑换次数"
           >
             <template slot-scope="{row}">
-              {{ row.name9 }}
+              <el-input v-model="row.exchange_quantity" type="number" placeholder="次数" @input="handleExchangeCishu(row)" />
             </template>
           </el-table-column>
           <el-table-column
@@ -215,7 +217,7 @@
             label="增值倍数"
           >
             <template slot-scope="{row}">
-              {{ row.name9 }}
+              <el-input v-model="row.multiple" type="number" placeholder="增值倍数" @input="handleExchangeBeishu(row)" />
             </template>
           </el-table-column>
           <el-table-column
@@ -223,7 +225,7 @@
             label="失效日期"
           >
             <template slot-scope="{row}">
-              {{ row.name10 | parseTime('{y}-{m}-{d}') }}
+              {{ row.term_validity | parseTime('{y}-{m}-{d}') }}
             </template>
           </el-table-column>
         </el-table>
@@ -245,6 +247,7 @@
   </el-dialog>
 </template>
 <script>
+import { apiPostCardPackageDeduction, apiPostCardPackageDeductionConfirm } from '@/api/ManageSales/Order.js'
 export default {
   name: '',
   props: {
@@ -258,13 +261,22 @@ export default {
   data() {
     return {
       // -
+      coupon: 0, // 抵扣金额
+      exchange: 0, // 兑换金额
+      customer_coupon_lists: [], // 代金券表数据
+      sale_card_packagedtl_lists: [], // 兑换表数据
       deductionData: {
         name1: '666.00',
         table1: [],
         table2: []
       },
       dialogVisible: false,
-      flagTime: 0
+      flagTime: 0,
+      customer_id: '',
+      customer_type: '',
+      goods_info: [],
+      customer_coupon: [], // 券抵扣信息
+      sale_card_packagedtl: [] // 老卡兑换信息
     }
   },
   watch: {
@@ -273,18 +285,125 @@ export default {
     }
   },
   created() {
-    // -
+    //
   },
   methods: {
-    handleSubmit(formName) {
-      const curr = new Date()
-      if (curr - this.flagTime > 1000) {
-        this.handleCancel()
-        this.flagTime = curr
+    // 优惠券input实时监听
+    handleCoupon(data) {
+      this.coupon = 0
+      for (let i = 0; i < this.customer_coupon.length; i++) {
+        if (this.customer_coupon[i].id === data.id) {
+          this.customer_coupon[i].use_amount = data.use_amount
+          break
+        }
+      }
+      this.countCoupon()
+    },
+    // 选中的优惠券
+    handleSelectionChange(val) {
+      this.customer_coupon = val.map(item => {
+        const obj = {
+          id: item.id,
+          coupon_id: item.coupon_id,
+          name: item.coupon.name,
+          type: item.coupon.type,
+          amount: item.amount,
+          money: item.money,
+          original_price: item.original_price,
+          use_amount: item.use_amount,
+          deduction_method: item.coupon.deduction_method
+        }
+        return obj
+      })
+      this.countCoupon()
+    },
+    // 计算优惠券价格
+    countCoupon() {
+      this.coupon = 0
+      for (let i = 0; i < this.customer_coupon.length; i++) {
+        this.coupon += this.customer_coupon[i].use_amount * 1
+      }
+    },
+    // 兑换次数input实时监听
+    handleExchangeCishu(data) {
+      this.exchange = 0
+      for (let i = 0; i < this.sale_card_packagedtl.length; i++) {
+        if (this.sale_card_packagedtl[i].id === data.id) {
+          this.sale_card_packagedtl[i].exchange_quantity = data.exchange_quantity
+          break
+        }
+      }
+      this.countExchange()
+    },
+    handleExchangeBeishu(data) {
+      this.exchange = 0
+      for (let i = 0; i < this.sale_card_packagedtl.length; i++) {
+        if (this.sale_card_packagedtl[i].id === data.id) {
+          this.sale_card_packagedtl[i].multiple = data.multiple
+          break
+        }
+      }
+      this.countExchange()
+    },
+    // 选中的兑换
+    handleSelectionExchange(val) {
+      this.sale_card_packagedtl = val.map(item => {
+        const obj = {
+          id: item.id,
+          adjust_price: item.adjust_price,
+          used_quantity: item.used_quantity,
+          exchange_quantity: item.exchange_quantity,
+          price: item.price,
+          expend_price: item.expend_price,
+          multiple: item.multiple
+        }
+        return obj
+      })
+      this.countExchange()
+    },
+    // 计算兑换价格
+    countExchange() {
+      this.exchange = 0
+      for (let i = 0; i < this.sale_card_packagedtl.length; i++) {
+        const datas = this.sale_card_packagedtl[i]
+        this.exchange += datas.exchange_quantity * datas.multiple * datas.expend_price
+      }
+    },
+    // 从父组件获取用户数据
+    init(customer_id, arrs, customer_type) {
+      this.customer_id = customer_id
+      this.customer_type = customer_type
+      this.goods_info = arrs
+      apiPostCardPackageDeduction({ customer_id: customer_id, goods_info: arrs }).then(response => {
+        const customerCouponLists = response.data.customer_coupon_lists
+        this.customer_coupon_lists = customerCouponLists.map(item => {
+          this.$set(item, 'use_amount', item.amount)
+          return item
+        })
+        const cardPackagedtlLists = response.data.sale_card_packagedtl_lists
+        this.sale_card_packagedtl_lists = cardPackagedtlLists.map(item => {
+          this.$set(item, 'exchange_quantity', item.surplus_quantity)
+          this.$set(item, 'multiple', 1)
+          return item
+        })
+        this.dialogVisible = true
+      })
+    },
+    handleSubmit() {
+      if (this.coupon + this.exchange > 0) {
+        apiPostCardPackageDeductionConfirm({ customer_id: this.customer_id, ctype: this.customer_type, goods_info: this.goods_info, customer_coupon: this.customer_coupon, sale_card_packagedtl: this.sale_card_packagedtl }).then(response => {
+          this.$emit('handleSetMoney', this.coupon, this.exchange)
+          this.dialogVisible = false
+        })
+      } else {
+        this.$message({
+          message: '请选择可兑换优惠券！',
+          type: 'warning'
+        })
       }
     },
     handleCancel() {
-      this.$parent.deductionVisible = false
+      this.dialogVisible = false
     }
   }
 }

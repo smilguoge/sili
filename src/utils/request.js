@@ -13,17 +13,21 @@ import Qs from 'qs'
 
 const baseURL = process.env.NODE_ENV === 'development' ? '/api' : process.env.VUE_APP_BASE_API
 const service = axios.create({
+  headers: {
+    'Content-Type': 'application/json'
+  },
   baseURL,
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 5000, // request timeout
+  timeout: 15000, // request timeout
   transformRequest: [
     function(data) {
-      return Qs.stringify(data)
+      data = JSON.stringify(data)
+      return data
     }
   ]
 })
 
-service.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8'
+service.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'
 
 // request interceptor
 service.interceptors.request.use(

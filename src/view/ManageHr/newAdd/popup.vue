@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-dialog @close="close" append-to-body :visible.sync="dialogTableVisible">
+    <el-dialog :close-on-click-modal='false' @close="close" append-to-body :visible.sync="dialogTableVisible">
       <el-form ref="form" :model="form" label-width="80px">
         <div class="form">
           <el-form-item label="奖惩类型" required>

@@ -41,8 +41,8 @@
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-col :span="23">
-        <el-button @click="handleChildrenClose('childrenData')">取 消</el-button>
-        <el-button type="primary" @click="submitForm('childrenData')">确 定</el-button>
+        <el-button @click="handleChildrenClose('childrenData')">取消</el-button>
+        <el-button type="primary" @click="submitForm('childrenData')">确定</el-button>
       </el-col>
       <div style="clear:both" />
     </div>

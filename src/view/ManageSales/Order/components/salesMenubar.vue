@@ -25,7 +25,7 @@
         <span class="order-menu-tit">退货</span>
       </div>
     </el-button>
-    <el-button type="text">
+    <el-button type="text" @click="openDialog('money')">
       <div class="menu-btn">
         <div class="font-wrap">
           <i class="iconfont icon-qian" />
@@ -45,11 +45,11 @@
 </template>
 <script>
 export default {
-  name: '',
+  name: "",
   data() {
     return {
       // -
-    }
+    };
   },
   created() {
     // -
@@ -57,10 +57,10 @@ export default {
   methods: {
     // -
     openDialog(type) {
-      this.$emit('open', type)
+      this.$emit("open", type);
     }
   }
-}
+};
 </script>
 <style lang="scss" scoped>
 .m-menu-body {

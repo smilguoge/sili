@@ -78,7 +78,7 @@
         </el-table-column>
         <el-table-column label="操作" fixed="right" align="center" width="100">
           <template slot-scope="{row}">
-            <el-button :size="miniSize" type="primary" @click="openDialog('edit',row)">编辑</el-button>
+            <el-button :size="miniSize" type="primary" @click="openDialog('edit',row.id)">编辑</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -116,7 +116,11 @@
       >
         <el-col :span="23">
           <el-form-item label="职务名称" prop="name">
-            <el-input v-model="changeData.name" placeholder="请输入职务名称" />
+            <el-input
+              v-model="changeData.name"
+              placeholder="请输入职务名称"
+              @input="nameTransition"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="23">
@@ -126,7 +130,7 @@
                 v-for="item in gradeOption"
                 :key="item.value"
                 :label="item.label"
-                :value="item.value"
+                :value="item.value+''"
               />
             </el-select>
           </el-form-item>
@@ -153,7 +157,7 @@
       <div slot="footer" class="dialog-footer">
         <el-col :span="23">
           <el-button @click="handleClose()">取 消</el-button>
-          <el-button type="primary" @click="submitForm('changeData', changeData)">确 定</el-button>
+          <el-button type="primary" @click="submitForm('changeData')">确 定</el-button>
         </el-col>
         <div style="clear:both" />
       </div>
@@ -162,6 +166,7 @@
 </template>
 
 <script>
+import vPinyin from '@/component/toPinYin/vue-py.js'
 import {
   getPosition,
   createPosition,
@@ -187,12 +192,19 @@ export default {
       page_size: 20,
 
       changeData: {
-        id: '',
         name: '',
         descrip: '',
         dic_position_series: '',
         sort: '',
-        status: -1
+        status: '1'
+      },
+
+      defaultData: {
+        name: '',
+        descrip: '',
+        dic_position_series: '',
+        sort: '',
+        status: '1'
       },
 
       currentRow: null,
@@ -245,13 +257,6 @@ export default {
             trigger: 'blur'
           }
         ],
-        status: [
-          {
-            required: true,
-            message: '请选择职务状态',
-            trigger: 'change'
-          }
-        ],
         dic_position_series: [
           {
             required: true,
@@ -271,12 +276,12 @@ export default {
     }
   },
   created() {
-    this.loadPosition(this.listQuery)
+    this.getList(this.listQuery)
     this.loadSeries()
   },
   methods: {
     // 职务管理列表
-    loadPosition(params) {
+    getList(params) {
       this.listLoading = true
       getPosition(params)
         .then(res => {
@@ -286,7 +291,6 @@ export default {
           this.total = parseInt(items.count)
           this.listLoading = false
         })
-        .catch(err => {})
     },
 
     // 职系列表
@@ -312,18 +316,18 @@ export default {
 
     // - 提交搜索
     submitSearch() {
-      this.loadPosition(this.listQuery)
+      this.getList(this.listQuery)
     },
 
     // - 弹框集中调用
-    openDialog(type, data) {
+    openDialog(type, id) {
       if (type === 'create') {
         this.dialogType = type
         this.dialogVisible = true
       } else if (type === 'edit') {
-        positionGupdate(data.id)
+        positionGupdate(id)
           .then(res => {
-            this.changeData = JSON.parse(JSON.stringify(res.data.detail))
+            this.changeData = res.data.detail
             this.dialogType = type
             this.dialogVisible = true
           })
@@ -338,11 +342,11 @@ export default {
     },
 
     // - 提交/验证 基础信息表单
-    submitForm(formName, fromData) {
+    submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
           // console.log("验证通过");
-          this.handleDone(this.dialogType, fromData)
+          this.handleDone(this.dialogType, this.changeData)
         } else {
           this.$message.warning('请正确填写必填项！')
           return false
@@ -353,51 +357,37 @@ export default {
     // - 重置表单
     resetForm(formName) {
       this.$refs[formName].resetFields()
-      this.changeData = {}
+      this.changeData = Object.assign({}, this.defaultData)
     },
 
     // - 处理确定Dialog
     handleDone(type, fromData) {
-      if (type == 'create') {
-        // - request 创建请求
-        const data1 = {
-          name: this.changeData.name,
-          descrip: this.changeData.descrip,
-          dic_position_series: this.changeData.dic_position_series,
-          sort: this.changeData.sort,
-          status: this.changeData.status
-        }
-        createPosition(data1)
+      this.changeData.sort = this.changeData.sort || '0' // 排序号设置默认值
+      if (type === 'create') {
+        // - request 创建
+        createPosition(fromData)
           .then(res => {
-            // - 请求成功
-            this.$message.success('新增成功!')
-            this.loadPosition()
+            this.$message.success('操作成功!')
+            this.getList(this.listQuery)
+            this.dialogVisible = false
+            this.resetForm('changeData')
           })
           .catch(res => {
-            this.$message.warning(res.message)
+            return
           })
-        this.dialogVisible = false
-        this.resetForm('changeData')
       } else {
-        // - request 更新请求
-        const id = this.changeData.id
-        const data = {
-          name: fromData.name,
-          descrip: fromData.descrip,
-          dic_position_series: fromData.dic_position_series,
-          sort: fromData.sort,
-          status: fromData.status
-        }
-        updatePosition(id, data)
+        // - request 更新
+        const id = fromData.id
+        updatePosition(id, fromData)
           .then(res => {
-            this.$message.success('编辑成功!')
-            this.loadPosition()
+            this.$message.success('操作成功!')
+            this.getList(this.listQuery)
+            this.dialogVisible = false
+            this.resetForm('changeData')
           })
           .catch(res => {
-            this.$message.warning(res.message)
+            return
           })
-        this.dialogVisible = false
-        this.resetForm('changeData')
       }
     },
 
@@ -416,6 +406,7 @@ export default {
         type: 'warning'
       })
         .then(() => {
+          // request
           this.batch_delete(data)
         })
         .catch(() => {})
@@ -434,7 +425,7 @@ export default {
         deletePosition(arr)
           .then(res => {
             this.$message.success('删除成功!')
-            this.loadPosition()
+            this.getList(this.listQuery)
           })
           .catch(res => {
             this.$message.warning(res.message)
@@ -453,13 +444,27 @@ export default {
       // console.log(val)
     },
 
+    nameTransition(name) {
+      // 提取名称首字母
+      const changeName = vPinyin.chineseToPinYin(name)
+      let resName = ''
+      for (var i = 0; i < changeName.length; i++) {
+        var c = changeName.charAt(i)
+        if (/^[A-Z\d]+$/.test(c)) {
+          resName += c
+        }
+      }
+      this.changeData.chinese_initial = resName
+      console.log('缩写获取', resName)
+    },
+
     handleSizeChange(val) {
       this.listQuery.page_size = val
-      this.loadPosition(this.listQuery)
+      this.getList(this.listQuery)
     },
     handleCurrentChange(val) {
       this.listQuery.page = val
-      this.loadPosition(this.listQuery)
+      this.getList(this.listQuery)
     }
   }
 }

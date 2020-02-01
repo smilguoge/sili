@@ -33,7 +33,7 @@
  *
  * 1. structureData 【必传】 组件数据（name 作为展示，child 作为子级）
  *
- * 2. checkData 【非必传】 默认选中的数据，默认为空，isSelect 值为 true 才可以用
+ * 2. checkData 【非必传】 默认选中的数据，默认为空，只有 isSelect 为 true 才可以用
  *
  * 3. isSelect 【非必填】 是否显示复选框，默认为 false
  *
@@ -103,7 +103,7 @@ export default {
     },
     nodeClick(data) {
       // - 获取被点击数据（不是选中复选框）
-      // console.log(data);
+      this.$emit('handleTree', data.id, data.name , data)
     },
     checkClick(data, checked, indeterminate) {
       // - 勾选时触发
